@@ -2,6 +2,9 @@ node_modules/
 dist/
 coverage/
 
+# Firebase CLI local deploy cache
+.firebase/
+
 # local env (secrets/config) — keep the example + committed production config
 .env*
 !.env.example
