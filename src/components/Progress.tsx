@@ -1,0 +1,239 @@
+import React from "react";
+import { User } from "../types";
+import { UserCalculations } from "../data";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { Flame, Activity, TrendingDown } from "lucide-react";
+
+interface ProgressProps {
+  user: User;
+  calculations: UserCalculations;
+}
+
+export default function Progress({ user, calculations }: ProgressProps) {
+  const {
+    totalCalorieDeficit,
+    totalWeightLost,
+    weeklySummaries,
+    currentWeekNum,
+    programStatus,
+  } = calculations;
+
+  // Weeks that have actually happened: none before the program starts
+  const elapsedWeekNum = programStatus === "not_started" ? 0 : currentWeekNum;
+
+  // Cumulative chart data for weeks that have happened (1..current week)
+  let cumulativeWeightLostSoFar = 0;
+
+  const chartData = weeklySummaries
+    .filter((summary) => summary.week <= elapsedWeekNum)
+    .map((summary) => {
+      cumulativeWeightLostSoFar += summary.weight_lost;
+      return {
+        name: `Week ${summary.week}`,
+        estimated_weight: parseFloat((user.starting_weight - cumulativeWeightLostSoFar).toFixed(2)),
+      };
+    });
+
+  // Calculate overall progress stats
+  const totalWorkoutCaloriesBurned = weeklySummaries
+    .filter((s) => s.week <= elapsedWeekNum)
+    .reduce((sum, item) => sum + item.calories_burned, 0);
+
+  // Custom tooltips styling for Recharts
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-[#111111] text-white p-4 rounded-xl border border-gray-800 shadow-lg text-xs font-sans">
+          <p className="font-extrabold text-[#2ECC71] mb-1.5">{label}</p>
+          <p className="font-mono text-gray-300">
+            Est. Weight: <span className="font-bold text-white">{payload[0].value} kg</span>
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="space-y-6 animate-fadeIn" id="progress-screen">
+      {/* Title */}
+      <div>
+        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Your Progress</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Estimated weight loss from your calorie deficit — roughly 7,700 kcal per kilogram.
+        </p>
+      </div>
+
+      {/* Grid of overall milestones */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" id="progress-milestones">
+        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex items-center space-x-4">
+          <div className="bg-[#2ECC71]/10 p-3 rounded-xl text-[#2ECC71]">
+            <Flame className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Deficit</p>
+            <h4 className="text-2xl font-black font-mono mt-1 text-gray-900">
+              {totalCalorieDeficit.toLocaleString()} <span className="text-xs font-normal text-gray-500">kcal</span>
+            </h4>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex items-center space-x-4">
+          <div className="bg-orange-50 p-3 rounded-xl text-orange-500">
+            <Activity className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Workout Calories</p>
+            <h4 className="text-2xl font-black font-mono mt-1 text-gray-900">
+              {totalWorkoutCaloriesBurned.toLocaleString()} <span className="text-xs font-normal text-gray-500">kcal</span>
+            </h4>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex items-center space-x-4">
+          <div className="bg-blue-50 p-3 rounded-xl text-blue-500">
+            <TrendingDown className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Est. Weight Lost</p>
+            <h4 className="text-2xl font-black font-mono mt-1 text-[#2ECC71]">
+              {totalWeightLost} <span className="text-xs font-normal text-gray-500">kg</span>
+            </h4>
+          </div>
+        </div>
+      </div>
+
+      {/* Weight loss Trend Line Chart */}
+      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs space-y-4" id="trend-chart-card">
+        <div>
+          <h3 className="text-base font-bold text-gray-900">Weight Loss Trend</h3>
+          <p className="text-xs text-gray-400">Estimated weight each week, based on your logged deficits (started at {user.starting_weight} kg)</p>
+        </div>
+
+        {/* An axes-only chart reads as broken, so empty gets a message */}
+        {programStatus === "not_started" ? (
+          <div className="h-40 flex items-center justify-center text-center">
+            <p className="text-sm text-gray-400 font-medium">
+              Your program starts on{" "}
+              <span className="font-bold font-mono text-gray-600">{user.program_start_date}</span>{" "}
+              — your progress will show up here.
+            </p>
+          </div>
+        ) : (
+          <div className="w-full h-80 pt-4" id="chart-container">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={chartData}
+                margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F1F1" />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fill: "#9ca3af", fontSize: 10, fontWeight: "bold" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  domain={['dataMin - 1', 'dataMax + 1']}
+                  tick={{ fill: "#9ca3af", fontSize: 10, fontWeight: "bold" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend verticalAlign="top" height={36} iconType="circle" />
+                {/* One series only: sharing an axis with the ~0-2 kg loss
+                    line flattened this into two unreadable horizontal lines */}
+                <Line
+                  name="Estimated Weight (kg)"
+                  type="monotone"
+                  dataKey="estimated_weight"
+                  stroke="#2ECC71"
+                  strokeWidth={3}
+                  dot={{ r: 5, stroke: "#2ECC71", strokeWidth: 2, fill: "#FFFFFF" }}
+                  activeDot={{ r: 8 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+        {programStatus === "active" && chartData.length < 2 && (
+          <p className="text-xs text-gray-400 text-center">
+            Your trend line appears from Week 2 — keep logging!
+          </p>
+        )}
+      </div>
+
+      {/* Weekly Breakdown Grid */}
+      <div className="space-y-4" id="weekly-cards-section">
+        <h3 className="text-lg font-extrabold text-gray-900">Week by Week</h3>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="weekly-cards-grid">
+          {weeklySummaries.map((summary) => {
+            const isLogged = summary.week <= elapsedWeekNum;
+            
+            return (
+              <div
+                key={summary.week}
+                className={`p-5 rounded-2xl border transition-all ${
+                  isLogged
+                    ? "bg-white border-gray-100"
+                    : "bg-gray-50 border-gray-100 opacity-60"
+                }`}
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <span className={`text-xs font-black font-mono tracking-wider uppercase bg-gray-100 text-gray-600 px-3 py-1 rounded-full border border-gray-200`}>
+                    Week {summary.week}
+                  </span>
+                  {summary.week === elapsedWeekNum && programStatus === "active" ? (
+                    <span className="text-[10px] text-amber-800 font-extrabold bg-amber-100 px-2 py-0.5 rounded uppercase">
+                      In Progress
+                    </span>
+                  ) : isLogged ? (
+                    <span className="text-[10px] text-emerald-800 font-extrabold bg-[#2ECC71]/15 px-2 py-0.5 rounded uppercase">
+                      Done
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-gray-400 font-extrabold bg-gray-200 px-2 py-0.5 rounded uppercase">
+                      Upcoming
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-2 font-mono text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400 font-sans">Calories Burned:</span>
+                    <span className="font-bold text-gray-900">
+                      {isLogged ? `${summary.calories_burned} kcal` : "—"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400 font-sans">Weekly Deficit:</span>
+                    <span className="font-bold text-gray-900">
+                      {isLogged ? `${summary.deficit.toLocaleString()} kcal` : "—"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-gray-50 font-sans font-bold">
+                    <span className="text-gray-500">Est. Weight Loss:</span>
+                    <span className={isLogged ? "text-[#2ECC71] font-mono" : "text-gray-400"}>
+                      {isLogged ? `${summary.weight_lost} kg` : "—"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
