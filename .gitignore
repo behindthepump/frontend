@@ -2,9 +2,10 @@ node_modules/
 dist/
 coverage/
 
-# local env (secrets/config) — keep the example
+# local env (secrets/config) — keep the example + committed production config
 .env*
 !.env.example
+!.env.production
 
 .DS_Store
 *.log
