@@ -1,4 +1,3 @@
-import React from "react";
 import { Hourglass, XCircle } from "lucide-react";
 
 interface WaitlistProps {

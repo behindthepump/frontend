@@ -1,4 +1,3 @@
-import React from "react";
 import { Users, UserPlus } from "lucide-react";
 
 export type CoachPage = "clients" | "requests";

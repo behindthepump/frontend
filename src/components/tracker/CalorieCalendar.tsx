@@ -1,4 +1,3 @@
-import React from "react";
 import { User, DailyCalorie } from "../../types";
 import { getProgramWeekDates, todayStr as getTodayStr } from "../../data";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";

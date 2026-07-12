@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { User, DailyCalorie, WorkoutLog, WorkoutName } from "./types";
 import { todayStr, getWeekForDate, MAX_WORKOUT_CALORIES, PROGRAM_WEEKS } from "./data";
 import { Session, sessionFromFirebaseUser, logout, authErrorMessage } from "./auth";

@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { User, DailyCalorie, WorkoutLog } from "../../types";
 import {
   calculateUserStats,
   getProgramWeekDates,
-  mondayOf,
   todayStr,
   formatShortDate,
   PROGRAM_WEEKS
 } from "../../data";
+import { recency, RECENCY_CHIP_DARK } from "./recency";
 import { ClipboardList, User as UserIcon, Dumbbell, Flame } from "lucide-react";
 import Profile from "../Profile";
 import CoachClientReport from "./CoachClientReport";
@@ -55,18 +55,9 @@ export default function CoachClientScreens({
   const pace = paceDelta(goalKg, stats.totalWeightLost, week);
   const goalFraction = goalKg > 0 ? Math.min(1, stats.totalWeightLost / goalKg) : 0;
 
-  // Recency chip - the same urgency scale the roster cards use, so a client
-  // opened from an amber card stays amber here.
-  const chip =
-    stats.programStatus === "not_started"
-      ? { label: "Not started", cls: "bg-gray-800 text-gray-400" }
-      : !stats.lastLoggedDate
-      ? { label: "Never logged", cls: "bg-orange-500/20 text-orange-300" }
-      : stats.lastLoggedDate === today
-      ? { label: "Logged today", cls: "bg-[#2ECC71]/20 text-[#2ECC71]" }
-      : stats.lastLoggedDate >= mondayOf(today)
-      ? { label: `Logged ${formatShortDate(stats.lastLoggedDate)}`, cls: "bg-gray-800 text-gray-300" }
-      : { label: `Quiet since ${formatShortDate(stats.lastLoggedDate)}`, cls: "bg-amber-500/20 text-amber-300" };
+  // Same urgency scale as the roster cards, so a client opened from an
+  // amber card stays amber here.
+  const rec = recency(stats.programStatus, stats.lastLoggedDate);
 
   // This week's leading indicators (same meters as the roster card)
   const isActive = stats.programStatus === "active";
@@ -116,8 +107,8 @@ export default function CoachClientScreens({
                     : `Week ${stats.currentWeekNum} of ${PROGRAM_WEEKS} • started ${formatShortDate(user.program_start_date)}`}
                   {" • "}{user.workout_frequency}-day split
                 </span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${chip.cls}`}>
-                  {chip.label}
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${RECENCY_CHIP_DARK[rec.key]}`}>
+                  {rec.label}
                 </span>
               </p>
             </div>

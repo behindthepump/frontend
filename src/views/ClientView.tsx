@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { User, DailyCalorie, WorkoutLog, WorkoutName } from "../types";
 import { Session } from "../auth";
 import AppShell from "../components/AppShell";

@@ -35,8 +35,10 @@ export default function AppShell({
           </div>
         </div>
 
-        {/* Signed-in user */}
-        <div className="p-4 border-b border-gray-900 bg-[#1a1a1a] flex items-center justify-between gap-2">
+        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">{sidebarNav}</nav>
+
+        {/* Signed-in user - anchored at the bottom, away from the nav */}
+        <div className="p-4 border-t border-gray-900 bg-[#1a1a1a] flex items-center justify-between gap-2">
           <div className="min-w-0">
             <p className="text-sm font-black text-white truncate">{session.name}</p>
             <p className="text-[10px] text-[#2ECC71] font-bold uppercase tracking-widest">
@@ -53,14 +55,6 @@ export default function AppShell({
           </button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1.5">{sidebarNav}</nav>
-
-        {/* Footer branding */}
-        <div className="p-4 text-center border-t border-gray-900">
-          <p className="text-[10px] text-gray-600 font-sans font-medium">
-            v1.0.0
-          </p>
-        </div>
       </aside>
 
       {/* MOBILE HEADER / PORTABLE BAR */}

@@ -1,4 +1,3 @@
-import React from "react";
 import { Info } from "lucide-react";
 
 // Shown on the daily/workout screens before a client's program has begun.

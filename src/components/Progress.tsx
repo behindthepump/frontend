@@ -1,4 +1,3 @@
-import React from "react";
 import { User } from "../types";
 import { UserCalculations } from "../data";
 import {

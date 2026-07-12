@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { User } from "../types";
 import { Session, authErrorMessage, clientNameError } from "../auth";
 import { clientMetricsError } from "../data";

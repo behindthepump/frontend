@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { User, WorkoutLog, WorkoutName } from "../../types";
 import { getProgramStatus, getCurrentWeekNum } from "../../data";
 import WorkoutList from "../tracker/WorkoutList";

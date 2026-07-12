@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { User, DailyCalorie, WorkoutLog } from "../../types";
 import {
   calculateUserStats,
@@ -28,13 +28,12 @@ interface CoachClientReportProps {
   allWorkouts: WorkoutLog[];
 }
 
+const DAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
+
 // The trainer's lens on one client: the whole 12-week program at a glance
 // (compliance grid), goal trajectory, and the client's own notes - instead
 // of paging through the client-voiced tracker screens week by week.
 export default function CoachClientReport({ user, allCalories, allWorkouts }: CoachClientReportProps) {
-  const stats = calculateUserStats(user, allCalories, allWorkouts);
-  const today = todayStr();
-
   // One fixed-position tooltip for the compliance grid. Native `title` is
   // too slow to feel alive, and an absolute tooltip would clip against the
   // grid's overflow-x-auto scroll container - fixed escapes it.
@@ -47,42 +46,112 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
     onMouseLeave: () => setTip(null)
   });
 
-  const userCalories = allCalories.filter((c) => c.user_id === user.id);
-  const caloriesByDate = new Map(userCalories.map((c) => [c.date, c]));
-  const userWorkouts = allWorkouts.filter((w) => w.user_id === user.id);
-  const slots = WORKOUT_SLOTS[user.workout_frequency];
+  // Every tooltip show/hide re-renders this component - memoize the derived
+  // data so hovering doesn't recompute a program's worth of stats each time.
+  const { stats, caloriesByDate, userWorkouts, slots, today, elapsedDays, loggedDays, loggedPct, elapsedWeek, chartData, notes } =
+    useMemo(() => {
+      const stats = calculateUserStats(user, allCalories, allWorkouts);
+      const today = todayStr();
 
-  // Elapsed program days (for logging adherence)
-  const lastProgramDay = getProgramWeekDates(user, PROGRAM_WEEKS)[6].date;
-  let elapsedDays = 0;
-  if (stats.programStatus !== "not_started") {
-    const end = today < lastProgramDay ? today : lastProgramDay;
-    for (let d = user.program_start_date; d <= end; d = addDays(d, 1)) elapsedDays++;
-  }
-  const loggedDays = userCalories.filter((c) => c.date <= today).length;
-  const loggedPct = elapsedDays > 0 ? Math.round((loggedDays / elapsedDays) * 100) : 0;
+      const userCalories = allCalories.filter((c) => c.user_id === user.id);
+      const caloriesByDate = new Map(userCalories.map((c) => [c.date, c]));
+      const userWorkouts = allWorkouts.filter((w) => w.user_id === user.id);
+      const slots = WORKOUT_SLOTS[user.workout_frequency];
 
-  const elapsedWeek = stats.programStatus === "not_started" ? 0 : stats.currentWeekNum;
+      // Elapsed program days (for logging adherence)
+      const lastProgramDay = getProgramWeekDates(user, PROGRAM_WEEKS)[6].date;
+      let elapsedDays = 0;
+      if (stats.programStatus !== "not_started") {
+        const end = today < lastProgramDay ? today : lastProgramDay;
+        for (let d = user.program_start_date; d <= end; d = addDays(d, 1)) elapsedDays++;
+      }
+      const loggedDays = userCalories.filter((c) => c.date <= today).length;
+      const loggedPct = elapsedDays > 0 ? Math.round((loggedDays / elapsedDays) * 100) : 0;
 
-  // Cumulative estimated weight per elapsed week (same math as the client's
-  // Progress screen, compacted)
-  let cumulativeLost = 0;
-  const chartData = stats.weeklySummaries
-    .filter((s) => s.week <= elapsedWeek)
-    .map((s) => {
-      cumulativeLost += s.weight_lost;
-      return {
-        name: `W${s.week}`,
-        weight: parseFloat((user.starting_weight - cumulativeLost).toFixed(2))
-      };
-    });
+      const elapsedWeek = stats.programStatus === "not_started" ? 0 : stats.currentWeekNum;
 
-  const notes = userCalories
-    .filter((c) => c.notes)
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 6);
+      // Cumulative estimated weight per elapsed week (same math as the
+      // client's Progress screen, compacted)
+      let cumulativeLost = 0;
+      const chartData = stats.weeklySummaries
+        .filter((s) => s.week <= elapsedWeek)
+        .map((s) => {
+          cumulativeLost += s.weight_lost;
+          return {
+            name: `W${s.week}`,
+            weight: parseFloat((user.starting_weight - cumulativeLost).toFixed(2))
+          };
+        });
 
-  const dayLetters = ["M", "T", "W", "T", "F", "S", "S"];
+      const notes = userCalories
+        .filter((c) => c.notes)
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .slice(0, 6);
+
+      return { stats, caloriesByDate, userWorkouts, slots, today, elapsedDays, loggedDays, loggedPct, elapsedWeek, chartData, notes };
+    }, [user, allCalories, allWorkouts]);
+
+  // Stable element identity lets React skip the whole recharts subtree on
+  // tooltip re-renders.
+  const trendChart = useMemo(
+    () =>
+      chartData.length < 2 ? null : (
+        <div className="w-full h-56">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F1F1" />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: "#9ca3af", fontSize: 10, fontWeight: "bold" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                // Stretch to keep the target line in frame
+                domain={[
+                  (dataMin: number) => Math.floor(Math.min(dataMin, user.target_weight) - 1),
+                  (dataMax: number) => Math.ceil(dataMax + 1)
+                ]}
+                tick={{ fill: "#9ca3af", fontSize: 10, fontWeight: "bold" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <ReferenceLine
+                y={user.target_weight}
+                stroke="#9ca3af"
+                strokeDasharray="4 4"
+                label={{
+                  value: `target ${user.target_weight}`,
+                  position: "insideBottomLeft",
+                  fill: "#9ca3af",
+                  fontSize: 9,
+                  fontWeight: 700
+                }}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "#111111",
+                  border: "1px solid #1f2937",
+                  borderRadius: 12,
+                  fontSize: 11,
+                  color: "#fff"
+                }}
+                formatter={(value) => [`${value} kg`, "Est. weight"]}
+              />
+              <Line
+                type="monotone"
+                dataKey="weight"
+                stroke="#2ECC71"
+                strokeWidth={3}
+                dot={{ r: 4, stroke: "#2ECC71", strokeWidth: 2, fill: "#FFFFFF" }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      ),
+    [chartData, user.target_weight]
+  );
 
   return (
     <div className="space-y-6 animate-fadeIn" id="coach-client-report">
@@ -128,7 +197,7 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
             {/* Column headers */}
             <div className="flex items-center gap-1 text-[9px] font-bold text-gray-400 uppercase tracking-wider pb-1">
               <span className="w-9 shrink-0" />
-              {dayLetters.map((letter, i) => (
+              {DAY_LETTERS.map((letter, i) => (
                 <span key={i} className="w-5 text-center shrink-0">{letter}</span>
               ))}
               <span className="w-4 shrink-0" />
@@ -277,61 +346,7 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
               Estimated from logged deficits (7,700 kcal ≈ 1 kg)
             </p>
           </div>
-          {chartData.length >= 2 ? (
-            <div className="w-full h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F1F1" />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fill: "#9ca3af", fontSize: 10, fontWeight: "bold" }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    // Stretch to keep the target line in frame
-                    domain={[
-                      (dataMin: number) => Math.floor(Math.min(dataMin, user.target_weight) - 1),
-                      (dataMax: number) => Math.ceil(dataMax + 1)
-                    ]}
-                    tick={{ fill: "#9ca3af", fontSize: 10, fontWeight: "bold" }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <ReferenceLine
-                    y={user.target_weight}
-                    stroke="#9ca3af"
-                    strokeDasharray="4 4"
-                    label={{
-                      value: `target ${user.target_weight}`,
-                      position: "insideBottomLeft",
-                      fill: "#9ca3af",
-                      fontSize: 9,
-                      fontWeight: 700
-                    }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: "#111111",
-                      border: "1px solid #1f2937",
-                      borderRadius: 12,
-                      fontSize: 11,
-                      color: "#fff"
-                    }}
-                    formatter={(value) => [`${value} kg`, "Est. weight"]}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="weight"
-                    stroke="#2ECC71"
-                    strokeWidth={3}
-                    dot={{ r: 4, stroke: "#2ECC71", strokeWidth: 2, fill: "#FFFFFF" }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
+          {trendChart ?? (
             <p className="text-xs text-gray-400 py-10 text-center">
               The trend appears from Week 2 of the program.
             </p>

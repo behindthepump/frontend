@@ -1,5 +1,3 @@
-import React from "react";
-
 // The client's identity plate: initials on a dark disc, wrapped in a goal-
 // progress ring - the classic fitness-app glyph. Used on roster cards and
 // the drill-in header so the identity thread carries through.

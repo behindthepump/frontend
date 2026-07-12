@@ -1,44 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
-import { ClientStats, ClientSummary } from "../../store";
-import { mondayOf, todayStr, formatShortDate } from "../../data";
+import { useEffect, useRef, useState } from "react";
+import { ClientSummary } from "../../store";
 import PaceTrack, { paceDelta } from "./PaceTrack";
 import RingAvatar from "./RingAvatar";
 import DotMeter from "./DotMeter";
+import { recency, RECENCY_CHIP_LIGHT, RECENCY_EDGE } from "./recency";
 import { Users, ArrowRight, Search, Loader2, Dumbbell, Flame } from "lucide-react";
-
-// Every card carries its recency as a coloured left edge so the grid scans
-// as a status board - green (logged today), neutral (active this week),
-// amber (gone quiet), orange (never started logging) - plus a chip that
-// spells the same state out.
-function recencyStyle(stats: ClientStats): {
-  edge: string;
-  chip: { label: string; cls: string } | null;
-} {
-  if (stats.program_status === "not_started") return { edge: "border-l-gray-200", chip: null };
-  if (!stats.last_logged) {
-    return {
-      edge: "border-l-orange-400",
-      chip: { label: "Never logged", cls: "bg-orange-100 text-orange-700" }
-    };
-  }
-  const today = todayStr();
-  if (stats.last_logged === today) {
-    return {
-      edge: "border-l-[#2ECC71]",
-      chip: { label: "Logged today", cls: "bg-[#2ECC71]/15 text-emerald-700" }
-    };
-  }
-  if (stats.last_logged >= mondayOf(today)) {
-    return {
-      edge: "border-l-gray-300",
-      chip: { label: `Logged ${formatShortDate(stats.last_logged)}`, cls: "bg-gray-100 text-gray-600" }
-    };
-  }
-  return {
-    edge: "border-l-amber-400",
-    chip: { label: `Quiet since ${formatShortDate(stats.last_logged)}`, cls: "bg-amber-100 text-amber-800" }
-  };
-}
 
 interface ClientsRosterProps {
   clients: ClientSummary[]; // current roster page(s), stats computed server-side
@@ -98,7 +64,7 @@ export default function ClientsRoster({
           <input
             ref={searchRef}
             type="search"
-            placeholder="Search clients by name…"
+            placeholder="Search by first or last name…"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             className="w-full bg-white border border-gray-200 focus:border-[#2ECC71] text-gray-900 font-bold text-sm pl-10 pr-9 py-2.5 rounded-xl transition outline-none"
@@ -158,7 +124,7 @@ export default function ClientsRoster({
               ? stats.current_week
               : 0;
           const pace = paceDelta(goalKg, stats.total_weight_lost, week);
-          const { edge, chip } = recencyStyle(stats);
+          const rec = recency(stats.program_status, stats.last_logged);
 
           // The whole card is the drill-in target; the only other action
           // (delete) lives in the drill-in's danger zone.
@@ -167,7 +133,7 @@ export default function ClientsRoster({
               type="button"
               key={client.id}
               onClick={() => onSelectClient(client.id)}
-              className={`group relative text-left w-full bg-white p-5 rounded-2xl border border-gray-100 border-l-4 ${edge} transition duration-200 shadow-3xs hover:shadow-sm hover:-translate-y-0.5 space-y-4 animate-fadeIn cursor-pointer focus-visible:outline-2 focus-visible:outline-[#2ECC71]`}
+              className={`group relative text-left w-full bg-white p-5 rounded-2xl border border-gray-100 border-l-4 ${RECENCY_EDGE[rec.key]} transition duration-200 shadow-3xs hover:shadow-sm hover:-translate-y-0.5 space-y-4 animate-fadeIn cursor-pointer focus-visible:outline-2 focus-visible:outline-[#2ECC71]`}
               style={{ animationDelay: `${Math.min(index, 7) * 45}ms`, animationFillMode: "backwards" }}
             >
               {/* Identity row: ring = goal progress, chip = recency */}
@@ -178,9 +144,11 @@ export default function ClientsRoster({
                     <h3 className="text-base font-extrabold text-gray-900 truncate">
                       {client.name}
                     </h3>
-                    {chip && (
-                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md shrink-0 ${chip.cls}`}>
-                        {chip.label}
+                    {rec.key !== "not_started" && (
+                      <span
+                        className={`text-[10px] font-bold px-2.5 py-1 rounded-md shrink-0 ${RECENCY_CHIP_LIGHT[rec.key]}`}
+                      >
+                        {rec.label}
                       </span>
                     )}
                   </div>

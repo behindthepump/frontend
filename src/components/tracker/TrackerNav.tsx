@@ -1,4 +1,3 @@
-import React from "react";
 import { Flame, Dumbbell, LineChart, User as UserIcon, LayoutDashboard } from "lucide-react";
 
 // The client's five tracker tabs (the coach has its own nav - see

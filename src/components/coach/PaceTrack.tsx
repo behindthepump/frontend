@@ -1,4 +1,3 @@
-import React from "react";
 import { PROGRAM_WEEKS } from "../../data";
 
 // The pace track: 12 segments, one per program week. The green fill is

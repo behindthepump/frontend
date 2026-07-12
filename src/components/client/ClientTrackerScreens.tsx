@@ -1,4 +1,3 @@
-import React from "react";
 import { User, DailyCalorie, WorkoutLog, WorkoutName } from "../../types";
 import { calculateUserStats, getProgramStatus } from "../../data";
 import Dashboard from "../Dashboard";
