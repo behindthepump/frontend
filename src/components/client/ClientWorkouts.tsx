@@ -1,17 +1,19 @@
 import React, { useState } from "react";
-import { User, WorkoutLog } from "../../types";
+import { User, WorkoutLog, WorkoutName } from "../../types";
 import { getProgramStatus, getCurrentWeekNum } from "../../data";
 import WorkoutList from "../tracker/WorkoutList";
 import WorkoutProgressCard from "../tracker/WorkoutProgressCard";
 import NotStartedNotice from "../tracker/NotStartedNotice";
 import { Info } from "lucide-react";
 
-type WorkoutName = "Lower Body" | "Upper Body Push" | "Upper Body Pull";
-
 interface ClientWorkoutsProps {
   user: User;
   allWorkouts: WorkoutLog[];
-  onToggleWorkout: (week: number, workoutName: WorkoutName) => Promise<string | null>;
+  onToggleWorkout: (
+    week: number,
+    workoutName: WorkoutName,
+    caloriesBurned?: number
+  ) => Promise<string | null>;
 }
 
 // The client's own workout screen: check workouts off.
@@ -37,7 +39,7 @@ export default function ClientWorkouts({ user, allWorkouts, onToggleWorkout }: C
         <p className="text-sm text-gray-500 mt-1">
           {programStatus === "completed"
             ? "All 12 weeks done — great work! You can still fix any week's check-offs."
-            : "Check off each workout as you finish it — every check-off earns calories toward your weekly deficit."}
+            : "Check off each workout when you finish it and log the calories you burned — they count toward your weekly deficit."}
         </p>
       </div>
 
@@ -49,7 +51,7 @@ export default function ClientWorkouts({ user, allWorkouts, onToggleWorkout }: C
           currentWeekNum={currentWeekNum}
           isCurrentActiveWeek={viewWeek === currentWeekNum && programStatus === "active"}
           onChangeWeek={(delta) => setViewWeek((w) => Math.min(currentWeekNum, Math.max(1, w + delta)))}
-          onToggle={(name) => onToggleWorkout(viewWeek, name)}
+          onToggle={(name, calories) => onToggleWorkout(viewWeek, name, calories)}
         />
         <WorkoutProgressCard
           user={user}

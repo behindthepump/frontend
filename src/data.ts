@@ -1,11 +1,14 @@
-import { User, DailyCalorie, WorkoutLog, WeeklySummary } from "./types";
+import { User, DailyCalorie, WorkoutLog, WeeklySummary, WorkoutName } from "./types";
 
-// Static Workout definitions and their calories burned as specified
-export const WORKOUT_DEFINITIONS = [
-  { name: "Lower Body" as const, calories: 210 },
-  { name: "Upper Body Push" as const, calories: 262.5 },
-  { name: "Upper Body Pull" as const, calories: 210 }
-];
+// Workout slots per coach-set weekly frequency. Burn calories are entered
+// by the client at check-off, not fixed here.
+export const WORKOUT_SLOTS: Record<2 | 3, WorkoutName[]> = {
+  2: ["Lower Body", "Upper Body"],
+  3: ["Lower Body", "Upper Body Push", "Upper Body Pull"]
+};
+
+// Sanity cap on a self-reported workout burn (mirrors the backend).
+export const MAX_WORKOUT_CALORIES = 3000;
 
 export const PROGRAM_WEEKS = 12;
 
@@ -92,20 +95,23 @@ export function getProgramWeekDates(
   }));
 }
 
-// Sanity limits for coach-entered client metrics. Returns an error
-// message, or null if the values are usable.
+// Sanity limits for client metrics (onboarding + coach profile edits).
+// Returns an error message, or null if the values are usable. bmr is
+// optional because onboarding computes it server-side.
 export function clientMetricsError(fields: {
   age: number;
+  height: number;
   starting_weight: number;
   target_weight: number;
-  bmr: number;
+  bmr?: number;
 }): string | null {
-  const { age, starting_weight, target_weight, bmr } = fields;
+  const { age, height, starting_weight, target_weight, bmr } = fields;
   if (!Number.isFinite(age) || age < 1 || age > 120) return "Age must be between 1 and 120.";
+  if (!Number.isFinite(height) || height < 50 || height > 250) return "Height must be between 50 and 250 cm.";
   if (!Number.isFinite(starting_weight) || starting_weight <= 0) return "Starting weight must be greater than 0.";
   if (!Number.isFinite(target_weight) || target_weight <= 0) return "Target weight must be greater than 0.";
   if (target_weight >= starting_weight) return "Target weight must be below starting weight.";
-  if (!Number.isFinite(bmr) || bmr <= 0) return "BMR must be greater than 0.";
+  if (bmr !== undefined && (!Number.isFinite(bmr) || bmr <= 0)) return "BMR must be greater than 0.";
   return null;
 }
 
@@ -135,7 +141,7 @@ export function calculateUserStats(
   const currentWeekNum = getCurrentWeekNum(user);
   const programStatus = getProgramStatus(user);
 
-  const totalWorkouts = PROGRAM_WEEKS * WORKOUT_DEFINITIONS.length; // 36
+  const totalWorkouts = PROGRAM_WEEKS * user.workout_frequency; // 24 or 36
   const workoutCompletionCount = userWorkouts.filter((w) => w.completed).length;
 
   // The client's most recent activity: latest calorie-log date or

@@ -7,11 +7,13 @@ interface CalorieLogFormProps {
   user: User;
   selectedDate: string;
   existing?: DailyCalorie;
+  // Food-reference "+" clicks: each seq bump adds amount to the input.
+  foodAdd?: { amount: number; seq: number } | null;
   onSave: (calories: number, notes: string) => Promise<string | null>;
 }
 
 // The client's "Log Your Day" form. Client-only — the coach never sees it.
-export default function CalorieLogForm({ user, selectedDate, existing, onSave }: CalorieLogFormProps) {
+export default function CalorieLogForm({ user, selectedDate, existing, foodAdd, onSave }: CalorieLogFormProps) {
   const todayStr = getTodayStr();
   const [caloriesInput, setCaloriesInput] = useState("");
   const [notesInput, setNotesInput] = useState("");
@@ -26,6 +28,13 @@ export default function CalorieLogForm({ user, selectedDate, existing, onSave }:
     setSuccessMsg("");
     setErrorMsg("");
   }, [selectedDate, existing]);
+
+  // Add a food-reference pick to the running count.
+  useEffect(() => {
+    if (!foodAdd) return;
+    setCaloriesInput((prev) => String((Number(prev) || 0) + foodAdd.amount));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [foodAdd?.seq]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,7 +140,7 @@ export default function CalorieLogForm({ user, selectedDate, existing, onSave }:
         <button
           type="submit"
           disabled={saving}
-          className="w-full bg-[#111111] hover:bg-[#2ECC71] hover:text-[#111111] text-white font-extrabold text-xs py-3 rounded-xl uppercase tracking-wider transition-all duration-200 flex items-center justify-center space-x-2 shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-[#111111] hover:bg-[#2ECC71] hover:text-[#111111] text-white font-extrabold text-xs py-3 rounded-xl uppercase tracking-wider transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center space-x-2 shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Save className="w-4 h-4" />
           <span>{saving ? "Saving…" : existing ? "Update Entry" : "Save Entry"}</span>

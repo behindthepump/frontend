@@ -1,33 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { User, DailyCalorie, WorkoutLog } from "./types";
-import {
-  todayStr,
-  mondayOf,
-  getWeekForDate,
-  clientMetricsError,
-  WORKOUT_DEFINITIONS,
-  PROGRAM_WEEKS
-} from "./data";
-import { Session, sessionFromFirebaseUser, logout, clientNameError, authErrorMessage } from "./auth";
-import {
-  loadAppData,
-  saveCaloriesEntry,
-  saveWorkoutLog,
-  saveProfile,
-  createClient,
-  deleteClientData
-} from "./store";
+import { User, DailyCalorie, WorkoutLog, WorkoutName } from "./types";
+import { todayStr, getWeekForDate, MAX_WORKOUT_CALORIES, PROGRAM_WEEKS } from "./data";
+import { Session, sessionFromFirebaseUser, logout, authErrorMessage } from "./auth";
+import { loadAppData, saveCaloriesEntry, saveWorkoutLog } from "./store";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { Dumbbell, AlertCircle } from "lucide-react";
 import Login from "./components/Login";
-import ChangePassword from "./components/ChangePassword";
+import Onboarding from "./components/Onboarding";
+import Waitlist from "./components/Waitlist";
 import CoachView from "./views/CoachView";
 import ClientView from "./views/ClientView";
 
-// App owns the session and the Firestore-backed data, and routes to the
-// view the session dictates. The views themselves are separate
-// components - there is no in-app switching between them.
+// App owns the session and the signed-in client's own data, and routes to
+// the view the session dictates. The coach's view owns its own paginated
+// data (see CoachView). There is no in-app switching between roles.
 export default function App() {
   const [users, setUsers] = useState<User[]>([]);
   const [dailyCalories, setDailyCalories] = useState<DailyCalorie[]>([]);
@@ -71,9 +58,11 @@ export default function App() {
     });
   }, []);
 
-  // Load this session's data from Firestore (coach: everyone; client: own)
+  // Load the signed-in client's own data. The coach loads nothing here -
+  // CoachView fetches its roster pages itself. A client who isn't active
+  // yet is gated to onboarding/waitlist screens that need no data.
   const userId = session?.userId ?? null;
-  const role = session?.role ?? null;
+  const role = session?.role === "client" && session.status === "active" ? "client" : null;
   useEffect(() => {
     if (!userId || !role) {
       setUsers([]);
@@ -84,7 +73,7 @@ export default function App() {
     let cancelled = false;
     setDataLoading(true);
     setDataError("");
-    loadAppData({ userId, role })
+    loadAppData()
       .then((data) => {
         if (cancelled) return;
         setUsers(data.users);
@@ -116,7 +105,7 @@ export default function App() {
   const can = (permission: string) => session?.permissions.includes(permission) ?? false;
 
   // A client may only ever write their own data; the coach may write for
-  // any client. Mirrors the Firestore rules, which are the real gate.
+  // any client. UI gating only - the backend is the real gate.
   const canWriteFor = (clientId: string) => {
     if (!session || !can("logs:write")) return false;
     if (session.role === "client") return session.userId === clientId;
@@ -135,28 +124,7 @@ export default function App() {
 
   const writeErrorMessage = (err: unknown) => authErrorMessage(err);
 
-  // --- Handlers: write to Firestore first, then mirror in local state ---
-
-  // Update Client profile detail (coach only - baselines drive all the
-  // deficit math). Returns an error message or null.
-  const handleUpdateUserProfile = async (updatedUser: User): Promise<string | null> => {
-    if (!can("profile:write")) return "Only your coach can update profile metrics.";
-
-    const nameError = clientNameError(updatedUser.name);
-    if (nameError) return nameError;
-
-    const metricsError = clientMetricsError(updatedUser);
-    if (metricsError) return metricsError;
-
-    const cleaned = { ...updatedUser, name: updatedUser.name.trim() };
-    try {
-      await saveProfile(cleaned);
-    } catch (err) {
-      return writeErrorMessage(err);
-    }
-    setUsers((prev) => prev.map((u) => (u.id === cleaned.id ? cleaned : u)));
-    return null;
-  };
+  // --- Handlers: write via the API first, then mirror in local state ---
 
   // Add/Update daily calorie entries. Returns an error message or null.
   const handleSaveCalories = async (
@@ -204,11 +172,13 @@ export default function App() {
     return null;
   };
 
-  // Complete/Incomplete workouts. Returns an error message or null.
+  // Complete/Incomplete workouts. Completing requires the client-reported
+  // burn; unchecking clears it. Returns an error message or null.
   const handleToggleWorkout = async (
     clientId: string,
     week: number,
-    workoutName: "Lower Body" | "Upper Body Push" | "Upper Body Pull"
+    workoutName: WorkoutName,
+    caloriesBurned?: number
   ): Promise<string | null> => {
     if (!canWriteFor(clientId)) return "Not allowed.";
 
@@ -223,15 +193,25 @@ export default function App() {
     const existing = workoutLogs.find(
       (w) => w.user_id === clientId && w.week === week && w.workout_name === workoutName
     );
-    const def = WORKOUT_DEFINITIONS.find((d) => d.name === workoutName)!;
     const nowCompleted = existing ? !existing.completed : true;
+
+    if (nowCompleted) {
+      if (
+        caloriesBurned === undefined ||
+        !Number.isFinite(caloriesBurned) ||
+        caloriesBurned < 0 ||
+        caloriesBurned > MAX_WORKOUT_CALORIES
+      ) {
+        return `Calories burned must be between 0 and ${MAX_WORKOUT_CALORIES}.`;
+      }
+    }
 
     const updated: WorkoutLog = {
       id: existing?.id ?? `work-${clientId}-w${week}-${workoutName}`,
       user_id: clientId,
       week,
       workout_name: workoutName,
-      calories_burned: existing?.calories_burned ?? def.calories,
+      calories_burned: nowCompleted ? caloriesBurned! : 0,
       completed: nowCompleted,
       completed_at: nowCompleted ? todayStr() : null
     };
@@ -253,52 +233,6 @@ export default function App() {
       }
       return [...prev, updated];
     });
-    return null;
-  };
-
-  // Register New Client (Coach Flow). Returns the one-time credentials
-  // pair on success, or an error message.
-  const handleCreateClient = async (
-    newClientFields: Omit<User, "id">
-  ): Promise<{ email: string; tempPassword: string } | string> => {
-    if (!can("clients:create")) return "You are not allowed to create clients.";
-
-    const nameError = clientNameError(newClientFields.name);
-    if (nameError) return nameError;
-
-    const metricsError = clientMetricsError(newClientFields);
-    if (metricsError) return metricsError;
-
-    const fields: Omit<User, "id"> = {
-      ...newClientFields,
-      name: newClientFields.name.trim(),
-      email: newClientFields.email.trim().toLowerCase(),
-      // Week 1 is always anchored to a Monday
-      program_start_date: mondayOf(newClientFields.program_start_date)
-    };
-
-    try {
-      const result = await createClient(fields);
-      setUsers((prev) => [...prev, result.user]);
-      setWorkoutLogs((prev) => [...prev, ...result.workoutLogs]);
-      return { email: result.user.email, tempPassword: result.tempPassword };
-    } catch (err) {
-      return writeErrorMessage(err);
-    }
-  };
-
-  // Delete client (Coach Flow)
-  const handleDeleteClient = async (clientId: string): Promise<string | null> => {
-    if (!can("clients:delete")) return "You are not allowed to delete clients.";
-
-    try {
-      await deleteClientData(clientId);
-    } catch (err) {
-      return writeErrorMessage(err);
-    }
-    setUsers((prev) => prev.filter((u) => u.id !== clientId));
-    setDailyCalories((prev) => prev.filter((c) => c.user_id !== clientId));
-    setWorkoutLogs((prev) => prev.filter((w) => w.user_id !== clientId));
     return null;
   };
 
@@ -329,15 +263,20 @@ export default function App() {
     return <Login onLogin={handleLogin} notice={authNotice} />;
   }
 
-  // A temporary password must be replaced before anything else - this
-  // gate doesn't need app data, so it renders before the data splash.
-  if (session.mustChangePassword) {
+  // A fresh Google signup has no user doc yet - collect the baseline
+  // profile, then hold the client on the waitlist until approval. Neither
+  // screen needs app data, so they render before the data splash.
+  if (session.role === "client" && session.status === "new") {
     return (
-      <ChangePassword
-        onDone={() => setSession({ ...session, mustChangePassword: false })}
+      <Onboarding
+        onDone={(name) => setSession({ ...session, status: "pending", name })}
         onLogout={handleLogout}
       />
     );
+  }
+
+  if (session.role === "client" && (session.status === "pending" || session.status === "declined")) {
+    return <Waitlist status={session.status} name={session.name} onLogout={handleLogout} />;
   }
 
   if (dataLoading) {
@@ -370,18 +309,7 @@ export default function App() {
   }
 
   if (session.role === "coach") {
-    return (
-      <CoachView
-        session={session}
-        users={users}
-        allCalories={dailyCalories}
-        allWorkouts={workoutLogs}
-        onLogout={handleLogout}
-        onCreateClient={handleCreateClient}
-        onDeleteClient={handleDeleteClient}
-        onUpdateUser={handleUpdateUserProfile}
-      />
-    );
+    return <CoachView session={session} onLogout={handleLogout} />;
   }
 
   return (
@@ -393,7 +321,6 @@ export default function App() {
       onLogout={handleLogout}
       onSaveCalories={handleSaveCalories}
       onToggleWorkout={handleToggleWorkout}
-      onUpdateUser={handleUpdateUserProfile}
     />
   );
 }

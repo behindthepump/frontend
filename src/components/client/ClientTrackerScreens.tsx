@@ -1,5 +1,5 @@
 import React from "react";
-import { User, DailyCalorie, WorkoutLog } from "../../types";
+import { User, DailyCalorie, WorkoutLog, WorkoutName } from "../../types";
 import { calculateUserStats, getProgramStatus } from "../../data";
 import Dashboard from "../Dashboard";
 import Progress from "../Progress";
@@ -18,9 +18,9 @@ interface ClientTrackerScreensProps {
   onToggleWorkout: (
     clientId: string,
     week: number,
-    workoutName: "Lower Body" | "Upper Body Push" | "Upper Body Pull"
+    workoutName: WorkoutName,
+    caloriesBurned?: number
   ) => Promise<string | null>;
-  onUpdateUser: (updatedUser: User) => Promise<string | null>;
 }
 
 // The signed-in client's own screens: interactive logging.
@@ -31,8 +31,7 @@ export default function ClientTrackerScreens({
   activeTab,
   onNavigate,
   onSaveCalories,
-  onToggleWorkout,
-  onUpdateUser
+  onToggleWorkout
 }: ClientTrackerScreensProps) {
   const stats = calculateUserStats(user, allCalories, allWorkouts);
 
@@ -51,13 +50,13 @@ export default function ClientTrackerScreens({
         <ClientWorkouts
           user={user}
           allWorkouts={allWorkouts}
-          onToggleWorkout={(week, name) => onToggleWorkout(user.id, week, name)}
+          onToggleWorkout={(week, name, calories) => onToggleWorkout(user.id, week, name, calories)}
         />
       );
     case "progress":
       return <Progress user={user} calculations={stats} />;
     case "profile":
-      return <Profile user={user} canEdit={false} onUpdateUser={onUpdateUser} />;
+      return <Profile user={user} canEdit={false} />;
     case "dashboard":
     default:
       return (

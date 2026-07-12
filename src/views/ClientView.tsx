@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User, DailyCalorie, WorkoutLog } from "../types";
+import { User, DailyCalorie, WorkoutLog, WorkoutName } from "../types";
 import { Session } from "../auth";
 import AppShell from "../components/AppShell";
 import { TrackerNav, TrackerBottomNav } from "../components/tracker/TrackerNav";
@@ -21,9 +21,9 @@ interface ClientViewProps {
   onToggleWorkout: (
     clientId: string,
     week: number,
-    workoutName: "Lower Body" | "Upper Body Push" | "Upper Body Pull"
+    workoutName: WorkoutName,
+    caloriesBurned?: number
   ) => Promise<string | null>;
-  onUpdateUser: (updatedUser: User) => Promise<string | null>;
 }
 
 // The signed-in client's view: their own tracker, nothing else.
@@ -35,7 +35,6 @@ export default function ClientView({
   onLogout,
   onSaveCalories,
   onToggleWorkout,
-  onUpdateUser,
 }: ClientViewProps) {
   const [activeTab, setActiveTab] = useState("dashboard");
 
@@ -76,7 +75,6 @@ export default function ClientView({
         onNavigate={setActiveTab}
         onSaveCalories={onSaveCalories}
         onToggleWorkout={onToggleWorkout}
-        onUpdateUser={onUpdateUser}
       />
     </AppShell>
   );

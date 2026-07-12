@@ -1,6 +1,6 @@
 import React from "react";
 import { User, WorkoutLog } from "../../types";
-import { WORKOUT_DEFINITIONS, PROGRAM_WEEKS } from "../../data";
+import { PROGRAM_WEEKS } from "../../data";
 import { Trophy } from "lucide-react";
 
 interface WorkoutProgressCardProps {
@@ -13,7 +13,7 @@ interface WorkoutProgressCardProps {
 
 export default function WorkoutProgressCard({ user, allWorkouts, footer }: WorkoutProgressCardProps) {
   const userWorkouts = allWorkouts.filter((w) => w.user_id === user.id);
-  const totalWorkoutsCount = PROGRAM_WEEKS * WORKOUT_DEFINITIONS.length;
+  const totalWorkoutsCount = PROGRAM_WEEKS * user.workout_frequency;
   const completedWorkouts = userWorkouts.filter((w) => w.completed);
   const completedWorkoutsCount = completedWorkouts.length;
   const totalBurned = completedWorkouts.reduce((sum, w) => sum + w.calories_burned, 0);

@@ -1,69 +1,156 @@
-import React, { useState } from "react";
-import { User, DailyCalorie, WorkoutLog } from "../types";
-import { Session } from "../auth";
+import React, { useCallback, useEffect, useState } from "react";
+import { User } from "../types";
+import { Session, authErrorMessage, clientNameError } from "../auth";
+import { clientMetricsError } from "../data";
+import {
+  ClientSummary,
+  ClientData,
+  fetchClientsPage,
+  fetchRequests,
+  fetchClientData,
+  approveClient,
+  declineClient,
+  deleteClientData,
+  saveProfile
+} from "../store";
 import AppShell from "../components/AppShell";
 import CoachDashboard from "../components/CoachDashboard";
 import { TrackerNav, TrackerBottomNav } from "../components/tracker/TrackerNav";
-import CoachClientScreens from "../components/coach/CoachClientScreens";
-import { Users, ArrowLeft, Eye } from "lucide-react";
+import CoachClientScreens, { COACH_CLIENT_TABS } from "../components/coach/CoachClientScreens";
+import { Users, ArrowLeft, Loader2 } from "lucide-react";
 
 interface CoachViewProps {
   session: Session;
-  users: User[];
-  allCalories: DailyCalorie[];
-  allWorkouts: WorkoutLog[];
   onLogout: () => void;
-  onCreateClient: (
-    newClient: Omit<User, "id">
-  ) => Promise<{ email: string; tempPassword: string } | string>;
-  onDeleteClient: (clientId: string) => Promise<string | null>;
-  onUpdateUser: (updatedUser: User) => Promise<string | null>;
 }
 
-// The coach's view: the client roster, plus a drill-in to any client's
-// tracker (allowed by the coach's clients:read permission). The coach
-// never becomes a client - this is inspection, not role switching.
-export default function CoachView({
-  session,
-  users,
-  allCalories,
-  allWorkouts,
-  onLogout,
-  onCreateClient,
-  onDeleteClient,
-  onUpdateUser,
-}: CoachViewProps) {
-  const [viewingClientId, setViewingClientId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("dashboard");
+// The coach's view owns its own data: a paginated, searchable roster page
+// with server-computed stats, the signup requests, and an on-demand load of
+// one client's full logs for the drill-in. Nothing is bulk-loaded.
+export default function CoachView({ session, onLogout }: CoachViewProps) {
+  const [clients, setClients] = useState<ClientSummary[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [rosterLoading, setRosterLoading] = useState(true);
+  // Set when a drill-in profile edit changes data the roster displays
+  const [rosterStale, setRosterStale] = useState(false);
+  const [requests, setRequests] = useState<User[]>([]);
+  const [loadError, setLoadError] = useState("");
 
-  // The one-time credentials pair for a just-created client. Lives here
-  // (not in CoachDashboard) so drilling into a tracker and back doesn't
-  // destroy it before the coach copies it.
-  const [newCredentials, setNewCredentials] = useState<{
-    email: string;
-    tempPassword: string;
-  } | null>(null);
+  // Drill-in to one client's tracker (read-only logs + editable profile)
+  const [viewingClient, setViewingClient] = useState<ClientData | null>(null);
+  const [viewingLoading, setViewingLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("report");
 
-  const viewingClient = users.find((u) => u.id === viewingClientId) || null;
-
-  // Deleting the just-created client should clear their now-useless
-  // one-time credentials panel.
-  const handleDeleteClient = (clientId: string) => {
-    const deleted = users.find((u) => u.id === clientId);
-    if (deleted && newCredentials?.email === deleted.email) {
-      setNewCredentials(null);
+  const loadRoster = useCallback(async (searchTerm: string, cursor: string | null) => {
+    setRosterLoading(true);
+    setLoadError("");
+    try {
+      const page = await fetchClientsPage(searchTerm, cursor);
+      // A cursor load appends; a fresh search/reload replaces.
+      setClients((prev) => (cursor ? [...prev, ...page.clients] : page.clients));
+      setNextCursor(page.nextCursor);
+    } catch (err) {
+      setLoadError(authErrorMessage(err));
+    } finally {
+      setRosterLoading(false);
     }
-    return onDeleteClient(clientId);
+  }, []);
+
+  const loadRequests = useCallback(async () => {
+    try {
+      setRequests(await fetchRequests());
+    } catch (err) {
+      setLoadError(authErrorMessage(err));
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadRoster("", null);
+    void loadRequests();
+  }, [loadRoster, loadRequests]);
+
+  const handleSearch = (term: string) => {
+    setSearch(term);
+    void loadRoster(term, null);
+  };
+
+  const handleLoadMore = () => {
+    if (nextCursor && !rosterLoading) void loadRoster(search, nextCursor);
+  };
+
+  // --- Mutations: call the API, then refresh what the coach is looking at ---
+
+  const handleApprove = async (
+    uid: string,
+    programStartDate: string,
+    workoutFrequency: 2 | 3
+  ): Promise<string | null> => {
+    try {
+      await approveClient(uid, programStartDate, workoutFrequency);
+    } catch (err) {
+      return authErrorMessage(err);
+    }
+    // The request becomes a roster row - refresh both lists.
+    await Promise.all([loadRequests(), loadRoster(search, null)]);
+    return null;
+  };
+
+  const handleDecline = async (uid: string): Promise<string | null> => {
+    try {
+      await declineClient(uid);
+    } catch (err) {
+      return authErrorMessage(err);
+    }
+    setRequests((prev) => prev.map((r) => (r.id === uid ? { ...r, status: "declined" } : r)));
+    return null;
+  };
+
+  const handleDelete = async (uid: string): Promise<string | null> => {
+    try {
+      await deleteClientData(uid);
+    } catch (err) {
+      return authErrorMessage(err);
+    }
+    setClients((prev) => prev.filter((c) => c.user.id !== uid));
+    return null;
+  };
+
+  // Profile edit from the drill-in. Roster stats/name may now be stale -
+  // refetched when the coach navigates back.
+  const handleUpdateUser = async (updatedUser: User): Promise<string | null> => {
+    const nameError = clientNameError(updatedUser.name);
+    if (nameError) return nameError;
+    const metricsError = clientMetricsError(updatedUser);
+    if (metricsError) return metricsError;
+
+    const cleaned = { ...updatedUser, name: updatedUser.name.trim() };
+    try {
+      await saveProfile(cleaned);
+    } catch (err) {
+      return authErrorMessage(err);
+    }
+    setViewingClient((prev) => (prev && prev.user.id === cleaned.id ? { ...prev, user: cleaned } : prev));
+    setRosterStale(true);
+    return null;
   };
 
   const openClient = (clientId: string) => {
-    setViewingClientId(clientId);
-    setActiveTab("dashboard");
+    setActiveTab("report");
+    setViewingLoading(true);
+    fetchClientData(clientId)
+      .then(setViewingClient)
+      .catch((err) => setLoadError(authErrorMessage(err)))
+      .finally(() => setViewingLoading(false));
   };
 
   const backToRoster = () => {
-    setViewingClientId(null);
-    setActiveTab("dashboard");
+    setViewingClient(null);
+    setActiveTab("report");
+    if (rosterStale) {
+      setRosterStale(false);
+      void loadRoster(search, null);
+    }
   };
 
   const sidebarNav = (
@@ -83,9 +170,9 @@ export default function CoachView({
       {viewingClient && (
         <>
           <div className="pt-3 pb-1 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest truncate">
-            Viewing: {viewingClient.name}
+            Viewing: {viewingClient.user.name}
           </div>
-          <TrackerNav activeTab={activeTab} onSelect={setActiveTab} />
+          <TrackerNav activeTab={activeTab} onSelect={setActiveTab} tabs={COACH_CLIENT_TABS} />
         </>
       )}
     </>
@@ -100,7 +187,7 @@ export default function CoachView({
         <ArrowLeft className="w-3.5 h-3.5" />
         <span>All Clients</span>
       </button>
-      <span className="text-[#2ECC71] font-black truncate">{viewingClient.name}</span>
+      <span className="text-[#2ECC71] font-black truncate">{viewingClient.user.name}</span>
     </div>
   ) : undefined;
 
@@ -112,39 +199,40 @@ export default function CoachView({
       mobileSubheader={mobileSubheader}
       bottomNav={
         viewingClient ? (
-          <TrackerBottomNav activeTab={activeTab} onSelect={setActiveTab} />
+          <TrackerBottomNav activeTab={activeTab} onSelect={setActiveTab} tabs={COACH_CLIENT_TABS} />
         ) : undefined
       }
     >
-      {viewingClient ? (
-        <div className="space-y-4">
-          {/* Persistent context: the tracker screens are client-voiced,
-              so keep whose data this is visible on every tab. */}
-          <div className="flex items-center gap-2 bg-[#111111] text-white px-4 py-2.5 rounded-xl text-xs font-bold">
-            <Eye className="w-4 h-4 text-[#2ECC71] shrink-0" />
-            <span className="truncate">
-              Read-only view of <span className="text-[#2ECC71]">{viewingClient.name}</span>'s logs — you can edit their profile
-            </span>
-          </div>
-          <CoachClientScreens
-            user={viewingClient}
-            allCalories={allCalories}
-            allWorkouts={allWorkouts}
-            activeTab={activeTab}
-            onNavigate={setActiveTab}
-            onUpdateUser={onUpdateUser}
-          />
+      {loadError && (
+        <p className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100">
+          {loadError}
+        </p>
+      )}
+
+      {viewingLoading ? (
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="w-8 h-8 text-[#2ECC71] animate-spin" />
         </div>
+      ) : viewingClient ? (
+        <CoachClientScreens
+          user={viewingClient.user}
+          allCalories={viewingClient.dailyCalories}
+          allWorkouts={viewingClient.workoutLogs}
+          activeTab={activeTab}
+          onUpdateUser={handleUpdateUser}
+        />
       ) : (
         <CoachDashboard
-          users={users}
-          allCalories={allCalories}
-          allWorkouts={allWorkouts}
-          newCredentials={newCredentials}
-          onCredentialsChange={setNewCredentials}
+          clients={clients}
+          requests={requests}
+          nextCursor={nextCursor}
+          rosterLoading={rosterLoading}
+          onSearch={handleSearch}
+          onLoadMore={handleLoadMore}
           onSelectClient={openClient}
-          onCreateClient={onCreateClient}
-          onDeleteClient={handleDeleteClient}
+          onApproveClient={handleApprove}
+          onDeclineClient={handleDecline}
+          onDeleteClient={handleDelete}
         />
       )}
     </AppShell>

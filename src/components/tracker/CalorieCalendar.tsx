@@ -41,7 +41,7 @@ export default function CalorieCalendar({
             onClick={() => onChangeWeek(-1)}
             disabled={viewWeek <= 1}
             title="Previous week"
-            className="p-1.5 rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
+            className="p-1.5 rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 hover:scale-105 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -50,7 +50,7 @@ export default function CalorieCalendar({
             onClick={() => onChangeWeek(1)}
             disabled={viewWeek >= currentWeekNum}
             title="Next week"
-            className="p-1.5 rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
+            className="p-1.5 rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 hover:scale-105 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
           >
             <ChevronRight className="w-4 h-4" />
           </button>

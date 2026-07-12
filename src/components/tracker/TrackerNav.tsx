@@ -15,13 +15,16 @@ export const TRACKER_TABS = [
 interface TrackerNavProps {
   activeTab: string;
   onSelect: (tab: string) => void;
+  // Defaults to the client's five tracker tabs; the coach drill-in passes
+  // its own two (see COACH_CLIENT_TABS).
+  tabs?: typeof TRACKER_TABS;
 }
 
 // Sidebar tab buttons (desktop)
-export function TrackerNav({ activeTab, onSelect }: TrackerNavProps) {
+export function TrackerNav({ activeTab, onSelect, tabs = TRACKER_TABS }: TrackerNavProps) {
   return (
     <>
-      {TRACKER_TABS.map((tab) => {
+      {tabs.map((tab) => {
         const IconComp = tab.Icon;
         const isSelected = activeTab === tab.id;
         return (
@@ -44,10 +47,10 @@ export function TrackerNav({ activeTab, onSelect }: TrackerNavProps) {
 }
 
 // Fixed bottom tab bar (mobile)
-export function TrackerBottomNav({ activeTab, onSelect }: TrackerNavProps) {
+export function TrackerBottomNav({ activeTab, onSelect, tabs = TRACKER_TABS }: TrackerNavProps) {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#111111] text-white border-t border-gray-950 flex justify-around py-2 px-1 z-30" id="portable-tab-row">
-      {TRACKER_TABS.map((tab) => {
+      {tabs.map((tab) => {
         const IconComp = tab.Icon;
         const isSelected = activeTab === tab.id;
         return (

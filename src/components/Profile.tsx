@@ -5,16 +5,18 @@ import { User as UserIcon, Scale, Heart, Edit3 } from "lucide-react";
 interface ProfileProps {
   user: User;
   canEdit: boolean; // baselines are coach-set; clients get a read-only view
-  onUpdateUser: (updatedUser: User) => Promise<string | null>;
+  onUpdateUser?: (updatedUser: User) => Promise<string | null>; // required when canEdit
 }
 
 export default function Profile({ user, canEdit, onUpdateUser }: ProfileProps) {
   const [name, setName] = useState(user.name);
   const [age, setAge] = useState(user.age);
   const [gender, setGender] = useState(user.gender);
+  const [height, setHeight] = useState(user.height);
   const [startingWeight, setStartingWeight] = useState(user.starting_weight);
   const [targetWeight, setTargetWeight] = useState(user.target_weight);
   const [bmr, setBmr] = useState(user.bmr);
+  const [workoutFrequency, setWorkoutFrequency] = useState<2 | 3>(user.workout_frequency);
   
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState("");
@@ -22,14 +24,17 @@ export default function Profile({ user, canEdit, onUpdateUser }: ProfileProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!onUpdateUser) return;
     const error = await onUpdateUser({
       ...user,
       name,
       age: Number(age),
       gender,
+      height: Number(height),
       starting_weight: Number(startingWeight),
       target_weight: Number(targetWeight),
       bmr: Number(bmr),
+      workout_frequency: workoutFrequency,
     });
 
     if (error) {
@@ -130,6 +135,20 @@ export default function Profile({ user, canEdit, onUpdateUser }: ProfileProps) {
                   </select>
                 </div>
               </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-2">Height (cm)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="50"
+                  max="250"
+                  value={height}
+                  onChange={(e) => setHeight(Number(e.target.value))}
+                  className="w-full bg-gray-50 border border-gray-100 focus:border-[#2ECC71] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm font-mono"
+                  required
+                />
+              </div>
             </div>
 
             {/* Fitness Information */}
@@ -175,6 +194,29 @@ export default function Profile({ user, canEdit, onUpdateUser }: ProfileProps) {
                   className="w-full bg-gray-50 border border-gray-100 focus:border-[#2ECC71] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm font-mono"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-2">Workouts Per Week</label>
+                <div className="flex rounded-xl border border-gray-100 overflow-hidden text-sm font-bold">
+                  {([2, 3] as const).map((freq) => (
+                    <button
+                      key={freq}
+                      type="button"
+                      onClick={() => setWorkoutFrequency(freq)}
+                      className={`flex-1 py-2.5 uppercase tracking-wider transition cursor-pointer ${
+                        workoutFrequency === freq
+                          ? "bg-[#111111] text-[#2ECC71]"
+                          : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                      }`}
+                    >
+                      {freq}-day
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-gray-400 mt-1.5 font-medium">
+                  Past weeks keep what was logged; the new split applies from now on.
+                </p>
               </div>
             </div>
           </div>
@@ -223,9 +265,14 @@ export default function Profile({ user, canEdit, onUpdateUser }: ProfileProps) {
                 <p className="text-gray-900 mt-1">{user.age} Years</p>
               </div>
 
-              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 sm:col-span-2">
+              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
                 <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">Gender</p>
                 <p className="text-gray-900 mt-1">{user.gender}</p>
+              </div>
+
+              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">Height</p>
+                <p className="text-gray-900 mt-1">{user.height} cm</p>
               </div>
             </div>
           </div>
@@ -248,9 +295,14 @@ export default function Profile({ user, canEdit, onUpdateUser }: ProfileProps) {
                 <p className="text-gray-900 mt-1">{user.target_weight} kg</p>
               </div>
 
-              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 sm:col-span-2">
+              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
                 <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">Program Start (Week 1)</p>
                 <p className="text-gray-900 mt-1">{user.program_start_date}</p>
+              </div>
+
+              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">Workouts Per Week</p>
+                <p className="text-gray-900 mt-1">{user.workout_frequency}-day split</p>
               </div>
 
               <div className="bg-[#2ECC71]/10 p-3 rounded-xl border border-[#2ECC71]/10 sm:col-span-2 flex justify-between items-center">

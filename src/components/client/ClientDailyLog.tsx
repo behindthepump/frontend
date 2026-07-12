@@ -10,6 +10,7 @@ import {
 import CalorieCalendar from "../tracker/CalorieCalendar";
 import CalorieLogForm from "../tracker/CalorieLogForm";
 import WeeklyDeficitSummary from "../tracker/WeeklyDeficitSummary";
+import FoodReference from "../tracker/FoodReference";
 import NotStartedNotice from "../tracker/NotStartedNotice";
 
 interface ClientDailyLogProps {
@@ -30,6 +31,9 @@ export default function ClientDailyLog({ user, allCalories, allWorkouts, onSaveC
   const [selectedDate, setSelectedDate] = useState(
     programStatus === "completed" ? lastProgramDay : todayStr
   );
+  // Bumped by the food reference's + buttons; the log form adds the amount
+  // to its calories input.
+  const [foodAdd, setFoodAdd] = useState<{ amount: number; seq: number } | null>(null);
 
   if (programStatus === "not_started") {
     return (
@@ -78,6 +82,7 @@ export default function ClientDailyLog({ user, allCalories, allWorkouts, onSaveC
           user={user}
           selectedDate={selectedDate}
           existing={existing}
+          foodAdd={foodAdd}
           onSave={(calories, notes) => onSaveCalories(selectedDate, calories, notes)}
         />
         <WeeklyDeficitSummary
@@ -87,6 +92,12 @@ export default function ClientDailyLog({ user, allCalories, allWorkouts, onSaveC
           viewWeek={viewWeek}
         />
       </div>
+
+      <FoodReference
+        onAddFood={(calories) =>
+          setFoodAdd((prev) => ({ amount: calories, seq: (prev?.seq ?? 0) + 1 }))
+        }
+      />
     </div>
   );
 }
