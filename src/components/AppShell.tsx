@@ -23,7 +23,10 @@ export default function AppShell({
   children,
 }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-[#F7F7F7] text-[#111111] font-sans flex flex-col md:flex-row" id="app-root-container">
+    // min-h on mobile (100vh is unreliable under browser chrome there);
+    // locked to the viewport on desktop so the sidebar never outgrows the
+    // screen and only the content pane scrolls.
+    <div className="min-h-screen md:h-screen bg-[#F7F7F7] text-[#111111] font-sans flex flex-col md:flex-row" id="app-root-container">
       {/* LEFT SIDEBAR NAVIGATION (Desktop) */}
       <aside className="hidden md:flex flex-col w-64 bg-[#111111] text-white border-r border-[#111111] relative z-20 shrink-0" id="aside-sidebar-desktop">
         {/* Sidebar Header Brand */}

@@ -72,6 +72,13 @@ export function getCurrentWeekNum(user: User): number {
   return Math.max(1, Math.min(PROGRAM_WEEKS, raw));
 }
 
+// The first day the client could actually log. Monday anchoring can place
+// week-1 days before approval - those days are "before joining", never
+// "missed". Fallbacks cover docs that pre-date the approved_at field.
+export function firstLoggableDate(user: User): string {
+  return user.approved_at ?? user.requested_at?.slice(0, 10) ?? user.program_start_date;
+}
+
 export type ProgramStatus = "not_started" | "active" | "completed";
 
 // Where the user is in their program today

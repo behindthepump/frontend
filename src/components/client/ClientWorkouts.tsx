@@ -38,7 +38,7 @@ export default function ClientWorkouts({ user, allWorkouts, onToggleWorkout }: C
         <h1 className="text-2xl font-black text-gray-900 tracking-tight">Workout Tracking</h1>
         <p className="text-sm text-gray-500 mt-1">
           {programStatus === "completed"
-            ? "All 12 weeks done — great work! You can still fix any week's check-offs."
+            ? "All 12 weeks done — great work! You can still check off any session you missed."
             : "Check off each workout when you finish it and log the calories you burned — they count toward your weekly deficit."}
         </p>
       </div>
@@ -56,12 +56,13 @@ export default function ClientWorkouts({ user, allWorkouts, onToggleWorkout }: C
         <WorkoutProgressCard
           user={user}
           allWorkouts={allWorkouts}
+          viewWeek={viewWeek}
           footer={
             <>
               <Info className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
               <span>
-                Made a mistake? Tap a checked workout to uncheck it — its calories are removed from that
-                week automatically.
+                Mistakes this week? Tap a checked workout to uncheck it. Past weeks are locked — but you
+                can still check off any session you missed.
               </span>
             </>
           }

@@ -11,7 +11,8 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  Save
+  Save,
+  Lock
 } from "lucide-react";
 
 interface WorkoutListProps {
@@ -47,6 +48,9 @@ export default function WorkoutList({
   const slots = WORKOUT_SLOTS[user.workout_frequency];
   const viewWeekWorkouts = allWorkouts.filter((w) => w.user_id === user.id && w.week === viewWeek);
   const getWorkoutLog = (name: string) => viewWeekWorkouts.find((w) => w.workout_name === name);
+  // Past weeks are append-only: missed workouts can still be checked off,
+  // completed ones are locked (the backend enforces the same rule).
+  const isPastWeek = viewWeek < currentWeekNum;
 
   const resetEntry = () => {
     setPendingName(null);
@@ -57,7 +61,9 @@ export default function WorkoutList({
     if (!onToggle || togglingName) return;
     setToggleError("");
     if (isCompleted) {
-      // Uncheck immediately; the entered calories are removed with it.
+      if (isPastWeek) return; // locked - the row isn't interactive
+      const burn = getWorkoutLog(name)?.calories_burned ?? 0;
+      if (!window.confirm(`Uncheck ${name}? Its +${burn} kcal comes off this week.`)) return;
       setTogglingName(name);
       void onToggle(name).then((error) => {
         setTogglingName(null);
@@ -141,7 +147,7 @@ export default function WorkoutList({
               type="button"
               onClick={() => setLocation(loc)}
               className={`px-4 py-1.5 uppercase tracking-wider transition cursor-pointer ${
-                location === loc ? "bg-[#111111] text-[#2ECC71]" : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                location === loc ? "bg-[#2ECC71] text-[#111111]" : "bg-gray-50 text-gray-500 hover:bg-gray-100"
               }`}
             >
               {loc}
@@ -164,13 +170,15 @@ export default function WorkoutList({
           const routine = ROUTINES[location][user.workout_frequency][name];
           const isRoutineOpen = openRoutine === name;
           const isPending = pendingName === name;
+          const isLocked = isCompleted && isPastWeek;
+          const interactive = Boolean(onToggle) && !isLocked;
 
           return (
             <div key={name} className="space-y-0">
               <div
-                onClick={onToggle ? () => handleRowClick(name, isCompleted) : undefined}
+                onClick={interactive ? () => handleRowClick(name, isCompleted) : undefined}
                 className={`p-5 rounded-2xl border transition-all duration-200 flex items-center justify-between ${
-                  onToggle ? "cursor-pointer group " : ""
+                  interactive ? "cursor-pointer group " : ""
                 }${togglingName === name ? "opacity-50 pointer-events-none " : ""}${
                   isCompleted
                     ? "bg-[#2ECC71]/10 border-[#2ECC71] text-gray-900"
@@ -191,11 +199,16 @@ export default function WorkoutList({
                   </div>
                   <div>
                     <h4 className="text-base font-extrabold">{name}</h4>
-                    <p className="text-xs text-gray-400 font-mono mt-0.5">Resistance Training</p>
+                    <p className="text-xs text-gray-400 font-mono mt-0.5">
+                      {routine ? `${routine.workout.length} exercises` : "Resistance Training"}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-2">
+                  {isLocked && (
+                    <Lock className="w-3.5 h-3.5 text-gray-300 shrink-0" aria-label="Past weeks are locked" />
+                  )}
                   {isCompleted && (
                     <span className="font-mono text-xs font-bold bg-white text-gray-600 px-3 py-1 border border-gray-100 rounded-full flex items-center space-x-1 shadow-2xs">
                       <Flame className="w-3.5 h-3.5 text-orange-500" />
@@ -215,11 +228,11 @@ export default function WorkoutList({
                         setOpenRoutine(isRoutineOpen ? null : name);
                       }}
                       title={isRoutineOpen ? "Hide routine" : "View routine"}
-                      aria-label={isRoutineOpen ? "Hide routine" : "View routine"}
-                      className="p-1.5 rounded-lg border border-gray-100 bg-white text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition hover:scale-105 active:scale-95 cursor-pointer"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-100 bg-white text-gray-500 hover:text-gray-900 hover:bg-gray-50 text-[10px] font-bold uppercase tracking-wider transition hover:scale-105 active:scale-95 cursor-pointer"
                     >
+                      <span>Routine</span>
                       <ChevronDown
-                        className={`w-4 h-4 transition-transform duration-200 ${isRoutineOpen ? "rotate-180" : ""}`}
+                        className={`w-3.5 h-3.5 transition-transform duration-200 ${isRoutineOpen ? "rotate-180" : ""}`}
                       />
                     </button>
                   )}

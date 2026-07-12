@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { User, DailyCalorie } from "../../types";
 import { todayStr as getTodayStr } from "../../data";
-import { Calendar, Save, Sparkles, AlertCircle } from "lucide-react";
+import { Calendar, Save, Sparkles, AlertCircle, Lock, StickyNote } from "lucide-react";
 
 interface CalorieLogFormProps {
   user: User;
@@ -15,6 +15,9 @@ interface CalorieLogFormProps {
 // The client's "Log Your Day" form. Client-only — the coach never sees it.
 export default function CalorieLogForm({ user, selectedDate, existing, foodAdd, onSave }: CalorieLogFormProps) {
   const todayStr = getTodayStr();
+  // Past days are append-only: a missed day can be logged once; an already
+  // logged past day is read-only (the backend enforces the same rule).
+  const locked = Boolean(existing) && selectedDate < todayStr;
   const [caloriesInput, setCaloriesInput] = useState("");
   const [notesInput, setNotesInput] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -29,9 +32,9 @@ export default function CalorieLogForm({ user, selectedDate, existing, foodAdd, 
     setErrorMsg("");
   }, [selectedDate, existing]);
 
-  // Add a food-reference pick to the running count.
+  // Add a food-reference pick to the running count (never into a locked day).
   useEffect(() => {
-    if (!foodAdd) return;
+    if (!foodAdd || locked) return;
     setCaloriesInput((prev) => String((Number(prev) || 0) + foodAdd.amount));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [foodAdd?.seq]);
@@ -57,17 +60,48 @@ export default function CalorieLogForm({ user, selectedDate, existing, foodAdd, 
 
   return (
     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs lg:col-span-3" id="calorie-form-holder">
-      <h3 className="text-lg font-extrabold text-gray-900 border-b border-gray-100 pb-3">Log Your Day</h3>
+      {/* The selected day rides the title - the calendar above already
+          highlights it, no need for a whole field */}
+      <div className="flex justify-between items-center gap-2 border-b border-gray-100 pb-3">
+        <h3 className="text-lg font-extrabold text-gray-900">Log Your Day</h3>
+        <span className="flex items-center space-x-1.5 bg-gray-50 border border-gray-100 rounded-lg px-2.5 py-1 font-mono text-xs font-bold text-gray-700 shrink-0">
+          {locked ? <Lock className="w-3.5 h-3.5 text-gray-400" /> : <Calendar className="w-3.5 h-3.5 text-[#2ECC71]" />}
+          <span>{selectedDate === todayStr ? "Today" : selectedDate}</span>
+        </span>
+      </div>
 
-      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-        <div>
-          <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Logging For</label>
-          <div className="bg-gray-50 text-gray-800 px-4 py-3 rounded-xl border border-gray-100 font-mono text-sm font-bold flex items-center space-x-2">
-            <Calendar className="w-4 h-4 text-[#2ECC71]" />
-            <span>{selectedDate === todayStr ? `Today (${selectedDate})` : selectedDate}</span>
+      {locked && existing ? (
+        // Read-only view of a locked past day
+        <div className="mt-4 space-y-4">
+          <div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Logged</p>
+            <p className="text-3xl leading-none font-black font-mono text-gray-900 mt-2">
+              {existing.calories.toLocaleString()} <span className="text-sm text-gray-400 font-bold">kcal</span>
+            </p>
+            <p className="text-[11px] text-gray-400 font-medium mt-1.5">
+              {user.bmr - existing.calories >= 0
+                ? `${(user.bmr - existing.calories).toLocaleString()} kcal under your daily budget of ${user.bmr.toLocaleString()}`
+                : `${(existing.calories - user.bmr).toLocaleString()} kcal over your daily budget of ${user.bmr.toLocaleString()}`}
+            </p>
           </div>
-        </div>
 
+          {existing.notes && (
+            <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1.5">
+                <StickyNote className="w-3 h-3" /> Note
+              </p>
+              <p className="text-sm text-gray-700 font-medium mt-1">{existing.notes}</p>
+            </div>
+          )}
+
+          <p className="flex items-center gap-2 text-xs text-gray-400 font-medium bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
+            <Lock className="w-3.5 h-3.5 shrink-0" />
+            Past entries are locked to keep your history honest — missed days can still be logged, and
+            today's entry can always be edited.
+          </p>
+        </div>
+      ) : (
+      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
         <div>
           <label htmlFor="calories" className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
             Calories Consumed (kcal)
@@ -146,6 +180,7 @@ export default function CalorieLogForm({ user, selectedDate, existing, foodAdd, 
           <span>{saving ? "Saving…" : existing ? "Update Entry" : "Save Entry"}</span>
         </button>
       </form>
+      )}
     </div>
   );
 }

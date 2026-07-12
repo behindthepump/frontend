@@ -62,7 +62,7 @@ export default function ClientDailyLog({ user, allCalories, allWorkouts, onSaveC
         <h1 className="text-2xl font-black text-gray-900 tracking-tight">Daily Calorie Log</h1>
         <p className="text-sm text-gray-500 mt-1">
           {programStatus === "completed"
-            ? "You made it through all 12 weeks! You can still review and edit your logged days."
+            ? "You made it through all 12 weeks! You can still review your logged days and fill any you missed."
             : "Log what you ate — it takes ten seconds. Skipped days count as zero, so every log protects your progress."}
         </p>
       </div>

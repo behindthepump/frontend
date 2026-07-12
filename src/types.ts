@@ -18,6 +18,7 @@ export interface User {
   workout_frequency: 2 | 3; // coach-set workouts per week (set at approval)
   status: UserStatus;
   requested_at?: string; // ISO timestamp of the signup request
+  approved_at?: string; // YYYY-MM-DD the coach approved (first loggable day)
 }
 
 export interface DailyCalorie {

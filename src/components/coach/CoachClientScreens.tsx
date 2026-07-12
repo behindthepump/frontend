@@ -198,7 +198,13 @@ export default function CoachClientScreens({
 
       {tab === "profile" ? (
         <div className="animate-fadeIn">
-          <Profile user={user} canEdit={true} onUpdateUser={onUpdateUser} onDelete={onDelete} />
+          <Profile
+            user={user}
+            canEdit={true}
+            goalProgress={goalFraction}
+            onUpdateUser={onUpdateUser}
+            onDelete={onDelete}
+          />
         </div>
       ) : (
         <CoachClientReport user={user} allCalories={allCalories} allWorkouts={allWorkouts} />

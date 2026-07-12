@@ -1,5 +1,7 @@
 import { User } from "../types";
-import { UserCalculations } from "../data";
+import { UserCalculations, PROGRAM_WEEKS } from "../data";
+import PaceTrack, { paceDelta } from "./coach/PaceTrack";
+import CountUp from "./coach/CountUp";
 import {
   LineChart,
   Line,
@@ -7,7 +9,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
+  ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
 import { Flame, Activity, TrendingDown } from "lucide-react";
@@ -29,6 +31,16 @@ export default function Progress({ user, calculations }: ProgressProps) {
   // Weeks that have actually happened: none before the program starts
   const elapsedWeekNum = programStatus === "not_started" ? 0 : currentWeekNum;
 
+  const goalKg = parseFloat((user.starting_weight - user.target_weight).toFixed(1));
+  const paceWeek = programStatus === "completed" ? 12 : elapsedWeekNum;
+  const pace = paceDelta(goalKg, totalWeightLost, paceWeek);
+
+  // "Will I make it?" - current rate extended to week 12
+  const projectedKg =
+    programStatus === "active" && elapsedWeekNum > 0
+      ? parseFloat(((totalWeightLost / elapsedWeekNum) * PROGRAM_WEEKS).toFixed(1))
+      : null;
+
   // Cumulative chart data for weeks that have happened (1..current week)
   let cumulativeWeightLostSoFar = 0;
 
@@ -42,7 +54,6 @@ export default function Progress({ user, calculations }: ProgressProps) {
       };
     });
 
-  // Calculate overall progress stats
   const totalWorkoutCaloriesBurned = weeklySummaries
     .filter((s) => s.week <= elapsedWeekNum)
     .reduce((sum, item) => sum + item.calories_burned, 0);
@@ -73,6 +84,29 @@ export default function Progress({ user, calculations }: ProgressProps) {
         </p>
       </div>
 
+      {/* Pace vs plan: fill = progress to goal, tick = where this week says
+          you should be */}
+      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs space-y-3" id="goal-pace-card">
+        <div className="flex justify-between items-baseline gap-2">
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Goal Pace</h3>
+          <span className="flex items-center gap-2">
+            {pace && (
+              <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded ${pace.cls}`}>
+                {pace.label}
+              </span>
+            )}
+            <span className="text-sm font-mono font-bold text-gray-900">
+              −{totalWeightLost}
+              <span className="text-gray-400 font-medium"> of {goalKg} kg</span>
+            </span>
+          </span>
+        </div>
+        <PaceTrack goalKg={goalKg} lost={totalWeightLost} week={paceWeek} />
+        <p className="text-[11px] text-gray-400">
+          The mark shows where week {Math.max(paceWeek, 1)} of {PROGRAM_WEEKS} expects you to be.
+        </p>
+      </div>
+
       {/* Grid of overall milestones */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" id="progress-milestones">
         <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex items-center space-x-4">
@@ -82,7 +116,7 @@ export default function Progress({ user, calculations }: ProgressProps) {
           <div>
             <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Total Deficit</p>
             <h4 className="text-2xl font-black font-mono mt-1 text-gray-900">
-              {totalCalorieDeficit.toLocaleString()} <span className="text-xs font-normal text-gray-500">kcal</span>
+              <CountUp value={totalCalorieDeficit} /> <span className="text-xs font-normal text-gray-500">kcal</span>
             </h4>
           </div>
         </div>
@@ -94,19 +128,29 @@ export default function Progress({ user, calculations }: ProgressProps) {
           <div>
             <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Workout Calories</p>
             <h4 className="text-2xl font-black font-mono mt-1 text-gray-900">
-              {totalWorkoutCaloriesBurned.toLocaleString()} <span className="text-xs font-normal text-gray-500">kcal</span>
+              <CountUp value={totalWorkoutCaloriesBurned} /> <span className="text-xs font-normal text-gray-500">kcal</span>
             </h4>
           </div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex items-center space-x-4">
-          <div className="bg-blue-50 p-3 rounded-xl text-blue-500">
+          <div className="bg-[#111111] p-3 rounded-xl text-[#2ECC71]">
             <TrendingDown className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Est. Weight Lost</p>
+            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+              {projectedKg !== null ? "Projected by Week 12" : "Est. Weight Lost"}
+            </p>
             <h4 className="text-2xl font-black font-mono mt-1 text-[#2ECC71]">
-              {totalWeightLost} <span className="text-xs font-normal text-gray-500">kg</span>
+              {projectedKg !== null ? (
+                <>
+                  −{projectedKg} <span className="text-xs font-normal text-gray-500">of {goalKg} kg goal</span>
+                </>
+              ) : (
+                <>
+                  {totalWeightLost} <span className="text-xs font-normal text-gray-500">kg</span>
+                </>
+              )}
             </h4>
           </div>
         </div>
@@ -143,13 +187,28 @@ export default function Progress({ user, calculations }: ProgressProps) {
                   tickLine={false}
                 />
                 <YAxis
-                  domain={['dataMin - 1', 'dataMax + 1']}
+                  // Stretch to keep the target line in frame
+                  domain={[
+                    (dataMin: number) => Math.floor(Math.min(dataMin, user.target_weight) - 1),
+                    (dataMax: number) => Math.ceil(dataMax + 1)
+                  ]}
                   tick={{ fill: "#9ca3af", fontSize: 10, fontWeight: "bold" }}
                   axisLine={false}
                   tickLine={false}
                 />
+                <ReferenceLine
+                  y={user.target_weight}
+                  stroke="#9ca3af"
+                  strokeDasharray="4 4"
+                  label={{
+                    value: `target ${user.target_weight} kg`,
+                    position: "insideBottomLeft",
+                    fill: "#9ca3af",
+                    fontSize: 10,
+                    fontWeight: 700
+                  }}
+                />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend verticalAlign="top" height={36} iconType="circle" />
                 {/* One series only: sharing an axis with the ~0-2 kg loss
                     line flattened this into two unreadable horizontal lines */}
                 <Line
@@ -175,35 +234,41 @@ export default function Progress({ user, calculations }: ProgressProps) {
       {/* Weekly Breakdown Grid */}
       <div className="space-y-4" id="weekly-cards-section">
         <h3 className="text-lg font-extrabold text-gray-900">Week by Week</h3>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="weekly-cards-grid">
           {weeklySummaries.map((summary) => {
             const isLogged = summary.week <= elapsedWeekNum;
-            
+
+            // Upcoming weeks are stubs - three rows of dashes say nothing
+            if (!isLogged) {
+              return (
+                <div
+                  key={summary.week}
+                  className="p-5 rounded-2xl border bg-gray-50 border-gray-100 opacity-60 flex justify-between items-center"
+                >
+                  <span className="text-xs font-black font-mono tracking-wider uppercase bg-gray-100 text-gray-600 px-3 py-1 rounded-full border border-gray-200">
+                    Week {summary.week}
+                  </span>
+                  <span className="text-[10px] text-gray-400 font-extrabold bg-gray-200 px-2 py-0.5 rounded uppercase">
+                    Upcoming
+                  </span>
+                </div>
+              );
+            }
+
             return (
-              <div
-                key={summary.week}
-                className={`p-5 rounded-2xl border transition-all ${
-                  isLogged
-                    ? "bg-white border-gray-100"
-                    : "bg-gray-50 border-gray-100 opacity-60"
-                }`}
-              >
+              <div key={summary.week} className="p-5 rounded-2xl border bg-white border-gray-100 transition-all">
                 <div className="flex justify-between items-start mb-3">
-                  <span className={`text-xs font-black font-mono tracking-wider uppercase bg-gray-100 text-gray-600 px-3 py-1 rounded-full border border-gray-200`}>
+                  <span className="text-xs font-black font-mono tracking-wider uppercase bg-gray-100 text-gray-600 px-3 py-1 rounded-full border border-gray-200">
                     Week {summary.week}
                   </span>
                   {summary.week === elapsedWeekNum && programStatus === "active" ? (
                     <span className="text-[10px] text-amber-800 font-extrabold bg-amber-100 px-2 py-0.5 rounded uppercase">
                       In Progress
                     </span>
-                  ) : isLogged ? (
+                  ) : (
                     <span className="text-[10px] text-emerald-800 font-extrabold bg-[#2ECC71]/15 px-2 py-0.5 rounded uppercase">
                       Done
-                    </span>
-                  ) : (
-                    <span className="text-[10px] text-gray-400 font-extrabold bg-gray-200 px-2 py-0.5 rounded uppercase">
-                      Upcoming
                     </span>
                   )}
                 </div>
@@ -211,21 +276,15 @@ export default function Progress({ user, calculations }: ProgressProps) {
                 <div className="space-y-2 font-mono text-xs">
                   <div className="flex justify-between">
                     <span className="text-gray-400 font-sans">Calories Burned:</span>
-                    <span className="font-bold text-gray-900">
-                      {isLogged ? `${summary.calories_burned} kcal` : "—"}
-                    </span>
+                    <span className="font-bold text-gray-900">{summary.calories_burned} kcal</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400 font-sans">Weekly Deficit:</span>
-                    <span className="font-bold text-gray-900">
-                      {isLogged ? `${summary.deficit.toLocaleString()} kcal` : "—"}
-                    </span>
+                    <span className="font-bold text-gray-900">{summary.deficit.toLocaleString()} kcal</span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-gray-50 font-sans font-bold">
                     <span className="text-gray-500">Est. Weight Loss:</span>
-                    <span className={isLogged ? "text-[#2ECC71] font-mono" : "text-gray-400"}>
-                      {isLogged ? `${summary.weight_lost} kg` : "—"}
-                    </span>
+                    <span className="text-[#2ECC71] font-mono">{summary.weight_lost} kg</span>
                   </div>
                 </div>
               </div>

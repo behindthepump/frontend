@@ -1,16 +1,19 @@
 import React, { useState } from "react";
 import { User } from "../types";
+import RingAvatar from "./coach/RingAvatar";
 import { User as UserIcon, Scale, Heart, Edit3, Trash2 } from "lucide-react";
 
 interface ProfileProps {
   user: User;
   canEdit: boolean; // baselines are coach-set; clients get a read-only view
+  // Goal progress 0..1 for the identity ring (callers derive it from stats)
+  goalProgress?: number;
   onUpdateUser?: (updatedUser: User) => Promise<string | null>; // required when canEdit
   // Coach drill-in only: renders the delete danger zone when provided
   onDelete?: () => Promise<string | null>;
 }
 
-export default function Profile({ user, canEdit, onUpdateUser, onDelete }: ProfileProps) {
+export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser, onDelete }: ProfileProps) {
   const [name, setName] = useState(user.name);
   const [age, setAge] = useState(user.age);
   const [gender, setGender] = useState(user.gender);
@@ -254,17 +257,17 @@ export default function Profile({ user, canEdit, onUpdateUser, onDelete }: Profi
               <h3 className="text-base font-extrabold text-[#111111]">Basic Information</h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm font-mono font-bold">
-              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">Client Name</p>
-                <p className="text-gray-900 mt-1">{user.name}</p>
+            {/* Identity header - the ring glyph the rest of the app uses,
+                filled to goal progress */}
+            <div className="flex items-center gap-3">
+              <RingAvatar name={user.name} pct={goalProgress} />
+              <div className="min-w-0">
+                <p className="text-base font-extrabold text-gray-900 truncate">{user.name}</p>
+                <p className="text-xs text-gray-400 font-mono font-bold truncate mt-0.5">{user.email}</p>
               </div>
+            </div>
 
-              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">Sign-in Email</p>
-                <p className="text-gray-900 mt-1 break-all">{user.email}</p>
-              </div>
-
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm font-mono font-bold">
               <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
                 <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">Age</p>
                 <p className="text-gray-900 mt-1">{user.age} Years</p>
@@ -290,14 +293,20 @@ export default function Profile({ user, canEdit, onUpdateUser, onDelete }: Profi
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm font-mono font-bold">
-              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">Starting Weight</p>
-                <p className="text-gray-900 mt-1">{user.starting_weight} kg</p>
-              </div>
-
-              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">Target Weight</p>
-                <p className="text-gray-900 mt-1">{user.target_weight} kg</p>
+              {/* The goal as one journey, not two disconnected tiles */}
+              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 sm:col-span-2 flex justify-between items-center gap-2">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">Goal</p>
+                  <p className="text-gray-900 mt-1 text-lg font-black">
+                    {user.starting_weight}
+                    <span className="text-gray-300 mx-1.5">→</span>
+                    {user.target_weight}
+                    <span className="text-xs font-bold text-gray-400 ml-1">kg</span>
+                  </p>
+                </div>
+                <span className="text-[10px] font-bold font-mono bg-[#2ECC71]/10 text-emerald-700 px-2 py-1 rounded-md shrink-0">
+                  −{parseFloat((user.starting_weight - user.target_weight).toFixed(1))} kg
+                </span>
               </div>
 
               <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
@@ -308,6 +317,17 @@ export default function Profile({ user, canEdit, onUpdateUser, onDelete }: Profi
               <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
                 <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">Workouts Per Week</p>
                 <p className="text-gray-900 mt-1">{user.workout_frequency}-day split</p>
+              </div>
+
+              <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 sm:col-span-2">
+                <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">
+                  BMI — starting → target
+                </p>
+                <p className="text-gray-900 mt-1">
+                  {parseFloat((user.starting_weight / ((user.height / 100) ** 2)).toFixed(1))}
+                  <span className="text-gray-300 mx-1">→</span>
+                  {parseFloat((user.target_weight / ((user.height / 100) ** 2)).toFixed(1))}
+                </p>
               </div>
 
               <div className="bg-[#2ECC71]/10 p-3 rounded-xl border border-[#2ECC71]/10 sm:col-span-2 flex justify-between items-center">

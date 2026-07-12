@@ -122,6 +122,15 @@ export default function App() {
     setSession(null);
   };
 
+  // Waitlist "check my status": rebuild the session from the server; a
+  // status change (approved!) re-routes automatically.
+  const refreshSession = async (): Promise<string> => {
+    if (!auth.currentUser) return "signed-out";
+    const built = await sessionFromFirebaseUser(auth.currentUser);
+    setSession(built);
+    return built.status;
+  };
+
   const writeErrorMessage = (err: unknown) => authErrorMessage(err);
 
   // --- Handlers: write via the API first, then mirror in local state ---
@@ -135,6 +144,11 @@ export default function App() {
   ): Promise<string | null> => {
     if (!canWriteFor(clientId)) return "Not allowed.";
     if (dateStr > todayStr()) return "That day hasn't happened yet — you can log it when it does.";
+    // Past days are append-only: log a missed day once, edit only today
+    const alreadyLogged = dailyCalories.some((c) => c.user_id === clientId && c.date === dateStr);
+    if (dateStr < todayStr() && alreadyLogged) {
+      return "Past entries are locked — only today's log can be edited.";
+    }
     if (!Number.isFinite(calories) || calories < 0 || calories > 10000) {
       return "Calories must be between 0 and 10000.";
     }
@@ -194,6 +208,12 @@ export default function App() {
       (w) => w.user_id === clientId && w.week === week && w.workout_name === workoutName
     );
     const nowCompleted = existing ? !existing.completed : true;
+
+    // Past weeks are append-only, like daily logs: a missed workout can be
+    // checked off late, but completed past-week workouts are locked.
+    if (week < getWeekForDate(todayStr(), client.program_start_date) && existing?.completed) {
+      return "Past weeks are locked — completed workouts there can't be unchecked.";
+    }
 
     if (nowCompleted) {
       if (
@@ -276,7 +296,14 @@ export default function App() {
   }
 
   if (session.role === "client" && (session.status === "pending" || session.status === "declined")) {
-    return <Waitlist status={session.status} name={session.name} onLogout={handleLogout} />;
+    return (
+      <Waitlist
+        status={session.status}
+        name={session.name}
+        onRefresh={refreshSession}
+        onLogout={handleLogout}
+      />
+    );
   }
 
   if (dataLoading) {

@@ -1,5 +1,5 @@
 import { User, DailyCalorie, WorkoutLog, WorkoutName } from "../../types";
-import { calculateUserStats, getProgramStatus } from "../../data";
+import { calculateUserStats, getProgramStatus, todayStr } from "../../data";
 import Dashboard from "../Dashboard";
 import Progress from "../Progress";
 import Profile from "../Profile";
@@ -54,19 +54,41 @@ export default function ClientTrackerScreens({
       );
     case "progress":
       return <Progress user={user} calculations={stats} />;
-    case "profile":
-      return <Profile user={user} canEdit={false} />;
+    case "profile": {
+      const goalKg = user.starting_weight - user.target_weight;
+      return (
+        <Profile
+          user={user}
+          canEdit={false}
+          goalProgress={goalKg > 0 ? Math.min(1, stats.totalWeightLost / goalKg) : 0}
+        />
+      );
+    }
     case "dashboard":
-    default:
+    default: {
+      const weekWorkoutsDone = allWorkouts.filter(
+        (w) => w.user_id === user.id && w.week === stats.currentWeekNum && w.completed
+      ).length;
+      const loggedToday = allCalories.some((c) => c.user_id === user.id && c.date === todayStr());
       return (
         <Dashboard
           user={user}
           calculations={stats}
           allCalories={allCalories}
+          allWorkouts={allWorkouts}
           subtitle="Your 12-week plan — one day at a time"
-          cta={<ClientCtaCard user={user} programStatus={getProgramStatus(user)} onNavigate={onNavigate} />}
+          cta={
+            <ClientCtaCard
+              user={user}
+              programStatus={getProgramStatus(user)}
+              weekWorkoutsDone={weekWorkoutsDone}
+              loggedToday={loggedToday}
+              onNavigate={onNavigate}
+            />
+          }
           onNavigate={onNavigate}
         />
       );
+    }
   }
 }

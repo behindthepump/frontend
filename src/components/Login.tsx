@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { login, loginWithGoogle, requestPasswordReset, authErrorMessage, Session } from "../auth";
-import { Dumbbell, LogIn, AlertCircle, MailCheck } from "lucide-react";
+import Expand from "./Expand";
+import { Dumbbell, LogIn, AlertCircle, MailCheck, ChevronDown } from "lucide-react";
 
 interface LoginProps {
   onLogin: (session: Session) => void;
@@ -13,6 +14,9 @@ export default function Login({ onLogin, notice: initialNotice }: LoginProps) {
   const [error, setError] = useState(initialNotice ?? "");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  // Clients (everyone but one person) sign in with Google - the coach's
+  // email/password form stays collapsed until asked for.
+  const [coachOpen, setCoachOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +64,7 @@ export default function Login({ onLogin, notice: initialNotice }: LoginProps) {
 
   return (
     <div className="min-h-screen bg-[#111111] flex items-center justify-center font-sans p-4" id="login-screen">
-      <div className="w-full max-w-sm space-y-6">
+      <div className="w-full max-w-sm space-y-6 animate-fadeIn">
         {/* Brand */}
         <div className="text-center space-y-2">
           <Dumbbell className="w-10 h-10 text-[#2ECC71] mx-auto" />
@@ -94,12 +98,6 @@ export default function Login({ onLogin, notice: initialNotice }: LoginProps) {
             New here? Google sign-in also creates your account.
           </p>
 
-          <div className="flex items-center space-x-3">
-            <div className="flex-1 h-px bg-gray-800" />
-            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Coach sign-in</span>
-            <div className="flex-1 h-px bg-gray-800" />
-          </div>
-
           {error && (
             <div className="flex items-center space-x-2 text-xs text-red-400 font-bold bg-red-950/40 px-4 py-3 rounded-xl border border-red-900">
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -114,6 +112,26 @@ export default function Login({ onLogin, notice: initialNotice }: LoginProps) {
             </div>
           )}
 
+          {/* One person uses this - collapsed until asked for */}
+          <button
+            type="button"
+            onClick={() => setCoachOpen((o) => !o)}
+            className="w-full flex items-center space-x-3 cursor-pointer group"
+          >
+            <div className="flex-1 h-px bg-gray-800" />
+            <span className="flex items-center gap-1 text-[10px] font-bold text-gray-600 group-hover:text-gray-400 uppercase tracking-widest transition">
+              Coach sign-in
+              <ChevronDown
+                className={`w-3 h-3 transition-transform duration-200 ${coachOpen ? "rotate-180" : ""}`}
+              />
+            </span>
+            <div className="flex-1 h-px bg-gray-800" />
+          </button>
+
+          {/* -mt-4/pt-4 cancels the form's space-y-4 while collapsed */}
+          <div className="-mt-4">
+          <Expand open={coachOpen}>
+          <div className="pt-4 space-y-4">
           <div>
             <label htmlFor="email" className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
               Email
@@ -162,6 +180,9 @@ export default function Login({ onLogin, notice: initialNotice }: LoginProps) {
           >
             Forgot password?
           </button>
+          </div>
+          </Expand>
+          </div>
         </form>
       </div>
     </div>

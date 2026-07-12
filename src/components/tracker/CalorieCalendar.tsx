@@ -1,5 +1,5 @@
 import { User, DailyCalorie } from "../../types";
-import { getProgramWeekDates, todayStr as getTodayStr } from "../../data";
+import { getProgramWeekDates, firstLoggableDate, todayStr as getTodayStr } from "../../data";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CalorieCalendarProps {
@@ -25,6 +25,7 @@ export default function CalorieCalendar({
 }: CalorieCalendarProps) {
   const todayStr = getTodayStr();
   const viewWeekDates = getProgramWeekDates(user, viewWeek);
+  const joined = firstLoggableDate(user);
 
   return (
     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs" id="calendar-view">
@@ -62,7 +63,9 @@ export default function CalorieCalendar({
           const isSelected = Boolean(onSelectDay) && selectedDate === item.date;
           const isToday = item.date === todayStr;
           const isFuture = item.date > todayStr;
-          const isMissed = !hasLog && !isFuture && !isToday;
+          // Days before approval were never loggable - neutral, not "missed"
+          const isPreJoin = item.date < joined;
+          const isMissed = !hasLog && !isFuture && !isToday && !isPreJoin;
           const interactive = Boolean(onSelectDay) && !isFuture;
 
           return (
@@ -93,7 +96,7 @@ export default function CalorieCalendar({
                   {hasLog.notes && (
                     <span
                       className={`w-1.5 h-1.5 rounded-full ml-1 ${
-                        isSelected ? "bg-[#2ECC71]" : "bg-blue-400"
+                        isSelected ? "bg-[#2ECC71]" : "bg-[#2ECC71]/70"
                       }`}
                       title="Has a note"
                     />

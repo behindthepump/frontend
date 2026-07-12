@@ -3,6 +3,7 @@ import { User, DailyCalorie, WorkoutLog } from "../../types";
 import {
   calculateUserStats,
   getProgramWeekDates,
+  firstLoggableDate,
   todayStr,
   formatShortDate,
   addDays,
@@ -48,22 +49,26 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
 
   // Every tooltip show/hide re-renders this component - memoize the derived
   // data so hovering doesn't recompute a program's worth of stats each time.
-  const { stats, caloriesByDate, userWorkouts, slots, today, elapsedDays, loggedDays, loggedPct, elapsedWeek, chartData, notes } =
+  const { stats, caloriesByDate, userWorkouts, slots, today, joined, elapsedDays, loggedDays, loggedPct, elapsedWeek, chartData, notes } =
     useMemo(() => {
       const stats = calculateUserStats(user, allCalories, allWorkouts);
       const today = todayStr();
+      const joined = firstLoggableDate(user);
 
       const userCalories = allCalories.filter((c) => c.user_id === user.id);
       const caloriesByDate = new Map(userCalories.map((c) => [c.date, c]));
       const userWorkouts = allWorkouts.filter((w) => w.user_id === user.id);
       const slots = WORKOUT_SLOTS[user.workout_frequency];
 
-      // Elapsed program days (for logging adherence)
+      // Elapsed loggable days (for adherence) - starts at approval, not the
+      // Monday-anchored program start, so pre-join days don't count against
+      // the client.
       const lastProgramDay = getProgramWeekDates(user, PROGRAM_WEEKS)[6].date;
       let elapsedDays = 0;
       if (stats.programStatus !== "not_started") {
         const end = today < lastProgramDay ? today : lastProgramDay;
-        for (let d = user.program_start_date; d <= end; d = addDays(d, 1)) elapsedDays++;
+        const start = joined > user.program_start_date ? joined : user.program_start_date;
+        for (let d = start; d <= end; d = addDays(d, 1)) elapsedDays++;
       }
       const loggedDays = userCalories.filter((c) => c.date <= today).length;
       const loggedPct = elapsedDays > 0 ? Math.round((loggedDays / elapsedDays) * 100) : 0;
@@ -88,7 +93,7 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
         .sort((a, b) => b.date.localeCompare(a.date))
         .slice(0, 6);
 
-      return { stats, caloriesByDate, userWorkouts, slots, today, elapsedDays, loggedDays, loggedPct, elapsedWeek, chartData, notes };
+      return { stats, caloriesByDate, userWorkouts, slots, today, joined, elapsedDays, loggedDays, loggedPct, elapsedWeek, chartData, notes };
     }, [user, allCalories, allWorkouts]);
 
   // Stable element identity lets React skip the whole recharts subtree on
@@ -231,6 +236,8 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                     const entry = caloriesByDate.get(date);
                     const isFuture = date > today;
                     const isToday = date === today;
+                    // Days before approval were never loggable
+                    const isPreJoin = date < joined;
                     // Effort heatmap, not an attendance sheet: green depth
                     // scales with the day's deficit. Today unlogged is
                     // pending, not missed - the day isn't over.
@@ -253,6 +260,8 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                               }${entry.notes ? ` — ${entry.notes}` : ""}`
                             : isToday
                             ? `${date}: not logged yet`
+                            : isPreJoin
+                            ? `${date}: before joining`
                             : isFuture
                             ? date
                             : `${date}: not logged`
@@ -262,7 +271,7 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                             ? loggedCls
                             : isToday
                             ? "bg-white border-2 border-gray-200"
-                            : isFuture
+                            : isFuture || isPreJoin
                             ? "bg-gray-100"
                             : "bg-amber-200"
                         }`}
