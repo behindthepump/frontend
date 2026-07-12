@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { User, DailyCalorie, WorkoutLog } from "../../types";
 import {
   calculateUserStats,
@@ -16,9 +16,11 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  ReferenceLine,
   ResponsiveContainer
 } from "recharts";
 import { Scale, Flame, Dumbbell, CalendarCheck, StickyNote, TrendingDown } from "lucide-react";
+import CountUp from "./CountUp";
 
 interface CoachClientReportProps {
   user: User;
@@ -33,13 +35,22 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
   const stats = calculateUserStats(user, allCalories, allWorkouts);
   const today = todayStr();
 
+  // One fixed-position tooltip for the compliance grid. Native `title` is
+  // too slow to feel alive, and an absolute tooltip would clip against the
+  // grid's overflow-x-auto scroll container - fixed escapes it.
+  const [tip, setTip] = useState<{ text: string; x: number; y: number } | null>(null);
+  const tipHandlers = (text: string) => ({
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+      const r = e.currentTarget.getBoundingClientRect();
+      setTip({ text, x: r.left + r.width / 2, y: r.top });
+    },
+    onMouseLeave: () => setTip(null)
+  });
+
   const userCalories = allCalories.filter((c) => c.user_id === user.id);
   const caloriesByDate = new Map(userCalories.map((c) => [c.date, c]));
   const userWorkouts = allWorkouts.filter((w) => w.user_id === user.id);
   const slots = WORKOUT_SLOTS[user.workout_frequency];
-
-  const goalKg = parseFloat((user.starting_weight - user.target_weight).toFixed(1));
-  const goalPct = goalKg > 0 ? Math.min(100, Math.round((stats.totalWeightLost / goalKg) * 100)) : 0;
 
   // Elapsed program days (for logging adherence)
   const lastProgramDay = getProgramWeekDates(user, PROGRAM_WEEKS)[6].date;
@@ -75,82 +86,30 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
 
   return (
     <div className="space-y-6 animate-fadeIn" id="coach-client-report">
-      {/* Header: who, where they are, goal trajectory */}
-      <div className="bg-[#111111] p-6 rounded-2xl text-white border border-gray-800 space-y-4">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-          <div>
-            <h1 className="text-2xl font-black tracking-tight">{user.name}</h1>
-            <p className="text-xs text-gray-400 mt-1">
-              {stats.programStatus === "not_started"
-                ? `Program starts ${user.program_start_date}`
-                : stats.programStatus === "completed"
-                ? "Program complete • 12 weeks"
-                : `Week ${stats.currentWeekNum} of ${PROGRAM_WEEKS} • started ${formatShortDate(user.program_start_date)}`}
-              {" • "}{user.workout_frequency}-day split
-            </p>
-          </div>
-          <span
-            className={`text-[10px] font-bold px-2.5 py-1 rounded-md shrink-0 ${
-              stats.programStatus === "not_started"
-                ? "bg-gray-800 text-gray-400"
-                : !stats.lastLoggedDate
-                ? "bg-orange-500/20 text-orange-300"
-                : stats.lastLoggedDate === today
-                ? "bg-[#2ECC71]/20 text-[#2ECC71]"
-                : "bg-gray-800 text-gray-300"
-            }`}
-          >
-            {stats.programStatus === "not_started"
-              ? "Not started"
-              : !stats.lastLoggedDate
-              ? "Never logged"
-              : stats.lastLoggedDate === today
-              ? "Logged today"
-              : `Last activity ${formatShortDate(stats.lastLoggedDate)}`}
-          </span>
-        </div>
-
-        <div className="space-y-1.5">
-          <div className="flex justify-between items-baseline text-xs">
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Goal Progress</span>
-            <span className="font-mono font-bold">
-              −{stats.totalWeightLost} <span className="text-gray-500">of {goalKg} kg</span>
-              <span className="text-[#2ECC71] ml-2">{goalPct}%</span>
-            </span>
-          </div>
-          <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-            <div
-              className="bg-[#2ECC71] h-full rounded-full transition-all duration-500"
-              style={{ width: `${goalPct}%` }}
-            />
-          </div>
-        </div>
-      </div>
-
       {/* Coach KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <ReportKpi
           Icon={Scale}
           label="Est. Weight"
-          value={`${stats.currentWeight} kg`}
+          value={<><CountUp value={stats.currentWeight} /> kg</>}
           sub={`started ${user.starting_weight} kg`}
         />
         <ReportKpi
           Icon={TrendingDown}
-          label="Target"
-          value={`${user.target_weight} kg`}
-          sub={`${parseFloat((stats.currentWeight - user.target_weight).toFixed(1))} kg to go`}
+          label="To Go"
+          value={<><CountUp value={parseFloat((stats.currentWeight - user.target_weight).toFixed(1))} /> kg</>}
+          sub={`target ${user.target_weight} kg`}
         />
         <ReportKpi
           Icon={CalendarCheck}
           label="Days Logged"
-          value={elapsedDays > 0 ? `${loggedDays}/${elapsedDays}` : "—"}
+          value={elapsedDays > 0 ? <><CountUp value={loggedDays} />/{elapsedDays}</> : "—"}
           sub={elapsedDays > 0 ? `${loggedPct}% of days` : "not started"}
         />
         <ReportKpi
           Icon={Dumbbell}
           label="Workouts"
-          value={`${stats.workoutCompletionCount}/${stats.totalWorkouts}`}
+          value={<><CountUp value={stats.workoutCompletionCount} />/{stats.totalWorkouts}</>}
           sub={`${user.workout_frequency} per week`}
         />
       </div>
@@ -202,18 +161,41 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                   {dates.map(({ date }) => {
                     const entry = caloriesByDate.get(date);
                     const isFuture = date > today;
+                    const isToday = date === today;
+                    // Effort heatmap, not an attendance sheet: green depth
+                    // scales with the day's deficit. Today unlogged is
+                    // pending, not missed - the day isn't over.
+                    const dayDeficit = entry ? user.bmr - entry.calories : 0;
+                    const loggedCls =
+                      dayDeficit >= 500
+                        ? "bg-[#2ECC71]"
+                        : dayDeficit > 0
+                        ? "bg-[#2ECC71]/60"
+                        : "bg-[#2ECC71]/25";
                     return (
                       <span
                         key={date}
-                        title={
+                        {...tipHandlers(
                           entry
-                            ? `${date}: ${entry.calories} kcal${entry.notes ? ` — ${entry.notes}` : ""}`
+                            ? `${date}: ${entry.calories} kcal — ${
+                                dayDeficit >= 0
+                                  ? `${dayDeficit} deficit`
+                                  : `${-dayDeficit} surplus`
+                              }${entry.notes ? ` — ${entry.notes}` : ""}`
+                            : isToday
+                            ? `${date}: not logged yet`
                             : isFuture
                             ? date
                             : `${date}: not logged`
-                        }
-                        className={`w-5 h-5 rounded-md shrink-0 ${
-                          entry ? "bg-[#2ECC71]" : isFuture ? "bg-gray-100" : "bg-amber-200"
+                        )}
+                        className={`w-5 h-5 rounded-md shrink-0 transition duration-150 hover:scale-125 hover:ring-2 hover:ring-gray-300 ${
+                          entry
+                            ? loggedCls
+                            : isToday
+                            ? "bg-white border-2 border-gray-200"
+                            : isFuture
+                            ? "bg-gray-100"
+                            : "bg-amber-200"
                         }`}
                       />
                     );
@@ -228,12 +210,12 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                       return (
                         <span
                           key={slot}
-                          title={
+                          {...tipHandlers(
                             done
                               ? `${slot}: done${log?.completed_at ? ` ${formatShortDate(log.completed_at)}` : ""} (+${log?.calories_burned} kcal)`
                               : `${slot}: not done`
-                          }
-                          className={`w-3 h-3 rounded-full shrink-0 ${
+                          )}
+                          className={`w-3 h-3 rounded-full shrink-0 transition duration-150 hover:scale-125 ${
                             done
                               ? "bg-[#111111]"
                               : isElapsed
@@ -263,10 +245,16 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
             {/* Legend */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-2 text-[10px] text-gray-400 font-medium">
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-sm bg-[#2ECC71]" /> logged
+                <span className="w-3 h-3 rounded-sm bg-[#2ECC71]" />
+                <span className="w-3 h-3 rounded-sm bg-[#2ECC71]/60" />
+                <span className="w-3 h-3 rounded-sm bg-[#2ECC71]/25" />
+                logged — deficit → surplus
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-sm bg-amber-200" /> missed
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-white border-2 border-gray-200" /> today
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-sm bg-gray-100" /> upcoming
@@ -301,10 +289,26 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                     tickLine={false}
                   />
                   <YAxis
-                    domain={["dataMin - 1", "dataMax + 1"]}
+                    // Stretch to keep the target line in frame
+                    domain={[
+                      (dataMin: number) => Math.floor(Math.min(dataMin, user.target_weight) - 1),
+                      (dataMax: number) => Math.ceil(dataMax + 1)
+                    ]}
                     tick={{ fill: "#9ca3af", fontSize: 10, fontWeight: "bold" }}
                     axisLine={false}
                     tickLine={false}
+                  />
+                  <ReferenceLine
+                    y={user.target_weight}
+                    stroke="#9ca3af"
+                    strokeDasharray="4 4"
+                    label={{
+                      value: `target ${user.target_weight}`,
+                      position: "insideBottomLeft",
+                      fill: "#9ca3af",
+                      fontSize: 9,
+                      fontWeight: 700
+                    }}
                   />
                   <Tooltip
                     contentStyle={{
@@ -362,6 +366,15 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
           )}
         </div>
       </div>
+
+      {tip && (
+        <div
+          className="fixed z-50 -translate-x-1/2 -translate-y-full pointer-events-none px-3 py-2 rounded-xl bg-[#111111] border border-gray-800 text-white text-[11px] font-medium max-w-64 shadow-lg animate-fadeIn"
+          style={{ left: tip.x, top: tip.y - 8 }}
+        >
+          {tip.text}
+        </div>
+      )}
     </div>
   );
 }
@@ -374,7 +387,7 @@ function ReportKpi({
 }: {
   Icon: React.ComponentType<{ className?: string }>;
   label: string;
-  value: string;
+  value: React.ReactNode;
   sub: string;
 }) {
   return (

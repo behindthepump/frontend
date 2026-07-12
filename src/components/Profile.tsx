@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import { User } from "../types";
-import { User as UserIcon, Scale, Heart, Edit3 } from "lucide-react";
+import { User as UserIcon, Scale, Heart, Edit3, Trash2 } from "lucide-react";
 
 interface ProfileProps {
   user: User;
   canEdit: boolean; // baselines are coach-set; clients get a read-only view
   onUpdateUser?: (updatedUser: User) => Promise<string | null>; // required when canEdit
+  // Coach drill-in only: renders the delete danger zone when provided
+  onDelete?: () => Promise<string | null>;
 }
 
-export default function Profile({ user, canEdit, onUpdateUser }: ProfileProps) {
+export default function Profile({ user, canEdit, onUpdateUser, onDelete }: ProfileProps) {
   const [name, setName] = useState(user.name);
   const [age, setAge] = useState(user.age);
   const [gender, setGender] = useState(user.gender);
@@ -57,7 +59,10 @@ export default function Profile({ user, canEdit, onUpdateUser }: ProfileProps) {
         <div>
           <h1 className="text-2xl font-black text-gray-900 tracking-tight">Personal & Fitness Profile</h1>
           <p className="text-sm text-gray-500 mt-1">
-            The baseline numbers your coach uses to estimate your progress.
+            {/* Only the coach can edit, so canEdit doubles as the voice switch */}
+            {canEdit
+              ? `The baseline numbers behind ${user.name}'s plan.`
+              : "The baseline numbers your coach uses to estimate your progress."}
           </p>
         </div>
         
@@ -319,6 +324,31 @@ export default function Profile({ user, canEdit, onUpdateUser }: ProfileProps) {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Danger zone - the deliberate two-step home for deletion, away from
+          the roster's scan surface */}
+      {onDelete && !isEditing && (
+        <div className="bg-white p-5 rounded-2xl border border-red-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-extrabold text-gray-900">Delete this client</p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Removes {user.name}'s account and every log. This cannot be undone.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm(`Delete ${user.name}? All their data will be permanently deleted. This cannot be undone.`)) {
+                void onDelete().then((err) => setErrorMsg(err ?? ""));
+              }
+            }}
+            className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition hover:scale-[1.02] active:scale-[0.97] flex items-center justify-center space-x-1.5 cursor-pointer shrink-0"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Delete Client</span>
+          </button>
         </div>
       )}
     </div>

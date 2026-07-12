@@ -14,10 +14,11 @@ import {
   saveProfile
 } from "../store";
 import AppShell from "../components/AppShell";
-import CoachDashboard from "../components/CoachDashboard";
-import { TrackerNav, TrackerBottomNav } from "../components/tracker/TrackerNav";
-import CoachClientScreens, { COACH_CLIENT_TABS } from "../components/coach/CoachClientScreens";
-import { Users, ArrowLeft, Loader2 } from "lucide-react";
+import ClientsRoster from "../components/coach/ClientsRoster";
+import RequestsQueue from "../components/coach/RequestsQueue";
+import { CoachNav, CoachBottomNav, CoachPage } from "../components/coach/CoachNav";
+import CoachClientScreens from "../components/coach/CoachClientScreens";
+import { ArrowLeft, Loader2 } from "lucide-react";
 
 interface CoachViewProps {
   session: Session;
@@ -28,6 +29,7 @@ interface CoachViewProps {
 // with server-computed stats, the signup requests, and an on-demand load of
 // one client's full logs for the drill-in. Nothing is bulk-loaded.
 export default function CoachView({ session, onLogout }: CoachViewProps) {
+  const [page, setPage] = useState<CoachPage>("clients");
   const [clients, setClients] = useState<ClientSummary[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -37,19 +39,19 @@ export default function CoachView({ session, onLogout }: CoachViewProps) {
   const [requests, setRequests] = useState<User[]>([]);
   const [loadError, setLoadError] = useState("");
 
-  // Drill-in to one client's tracker (read-only logs + editable profile)
+  // Drill-in to one client's tracker (read-only logs + editable profile);
+  // lives under the Clients page - the main nav stays put while drilled in.
   const [viewingClient, setViewingClient] = useState<ClientData | null>(null);
   const [viewingLoading, setViewingLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("report");
 
   const loadRoster = useCallback(async (searchTerm: string, cursor: string | null) => {
     setRosterLoading(true);
     setLoadError("");
     try {
-      const page = await fetchClientsPage(searchTerm, cursor);
+      const rosterPage = await fetchClientsPage(searchTerm, cursor);
       // A cursor load appends; a fresh search/reload replaces.
-      setClients((prev) => (cursor ? [...prev, ...page.clients] : page.clients));
-      setNextCursor(page.nextCursor);
+      setClients((prev) => (cursor ? [...prev, ...rosterPage.clients] : rosterPage.clients));
+      setNextCursor(rosterPage.nextCursor);
     } catch (err) {
       setLoadError(authErrorMessage(err));
     } finally {
@@ -91,9 +93,13 @@ export default function CoachView({ session, onLogout }: CoachViewProps) {
     } catch (err) {
       return authErrorMessage(err);
     }
-    // The request becomes a roster row - refresh both lists.
-    await Promise.all([loadRequests(), loadRoster(search, null)]);
     return null;
+  };
+
+  // The request becomes a roster row - refresh both lists. Deferred by the
+  // queue until the approved card's exit animation finishes.
+  const handleApproveSettled = async () => {
+    await Promise.all([loadRequests(), loadRoster(search, null)]);
   };
 
   const handleDecline = async (uid: string): Promise<string | null> => {
@@ -106,13 +112,18 @@ export default function CoachView({ session, onLogout }: CoachViewProps) {
     return null;
   };
 
-  const handleDelete = async (uid: string): Promise<string | null> => {
+  // Deletion lives in the drill-in's Profile danger zone, not on the roster
+  // cards - a destructive action should take a deliberate detour.
+  const handleDeleteViewing = async (): Promise<string | null> => {
+    if (!viewingClient) return null;
+    const uid = viewingClient.user.id;
     try {
       await deleteClientData(uid);
     } catch (err) {
       return authErrorMessage(err);
     }
     setClients((prev) => prev.filter((c) => c.user.id !== uid));
+    closeClient();
     return null;
   };
 
@@ -136,7 +147,6 @@ export default function CoachView({ session, onLogout }: CoachViewProps) {
   };
 
   const openClient = (clientId: string) => {
-    setActiveTab("report");
     setViewingLoading(true);
     fetchClientData(clientId)
       .then(setViewingClient)
@@ -144,44 +154,25 @@ export default function CoachView({ session, onLogout }: CoachViewProps) {
       .finally(() => setViewingLoading(false));
   };
 
-  const backToRoster = () => {
+  const closeClient = () => {
     setViewingClient(null);
-    setActiveTab("report");
     if (rosterStale) {
       setRosterStale(false);
       void loadRoster(search, null);
     }
   };
 
-  const sidebarNav = (
-    <>
-      <button
-        onClick={backToRoster}
-        className={`w-full flex items-center space-x-3 font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl transition cursor-pointer ${
-          !viewingClient
-            ? "bg-[#2ECC71] text-[#111111] font-extrabold shadow-sm"
-            : "text-gray-400 hover:text-white hover:bg-gray-900"
-        }`}
-      >
-        <Users className="w-5 h-5 shrink-0" />
-        <span>Coach Dashboard</span>
-      </button>
+  const handleNav = (target: CoachPage) => {
+    if (viewingClient) closeClient();
+    setPage(target);
+  };
 
-      {viewingClient && (
-        <>
-          <div className="pt-3 pb-1 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest truncate">
-            Viewing: {viewingClient.user.name}
-          </div>
-          <TrackerNav activeTab={activeTab} onSelect={setActiveTab} tabs={COACH_CLIENT_TABS} />
-        </>
-      )}
-    </>
-  );
+  const pendingCount = requests.filter((r) => r.status === "pending").length;
 
   const mobileSubheader = viewingClient ? (
     <div className="flex justify-between items-center text-xs gap-2">
       <button
-        onClick={backToRoster}
+        onClick={closeClient}
         className="flex items-center space-x-1 text-gray-400 hover:text-white font-bold cursor-pointer shrink-0"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
@@ -195,13 +186,9 @@ export default function CoachView({ session, onLogout }: CoachViewProps) {
     <AppShell
       session={session}
       onLogout={onLogout}
-      sidebarNav={sidebarNav}
+      sidebarNav={<CoachNav page={page} pendingCount={pendingCount} onSelect={handleNav} />}
       mobileSubheader={mobileSubheader}
-      bottomNav={
-        viewingClient ? (
-          <TrackerBottomNav activeTab={activeTab} onSelect={setActiveTab} tabs={COACH_CLIENT_TABS} />
-        ) : undefined
-      }
+      bottomNav={<CoachBottomNav page={page} pendingCount={pendingCount} onSelect={handleNav} />}
     >
       {loadError && (
         <p className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100">
@@ -214,25 +201,38 @@ export default function CoachView({ session, onLogout }: CoachViewProps) {
           <Loader2 className="w-8 h-8 text-[#2ECC71] animate-spin" />
         </div>
       ) : viewingClient ? (
-        <CoachClientScreens
-          user={viewingClient.user}
-          allCalories={viewingClient.dailyCalories}
-          allWorkouts={viewingClient.workoutLogs}
-          activeTab={activeTab}
-          onUpdateUser={handleUpdateUser}
+        <div className="space-y-4">
+          {/* Mobile gets the same affordance in the subheader */}
+          <button
+            onClick={closeClient}
+            className="hidden md:flex items-center space-x-1.5 text-xs font-bold text-gray-400 hover:text-gray-900 uppercase tracking-wider transition cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>All Clients</span>
+          </button>
+          <CoachClientScreens
+            user={viewingClient.user}
+            allCalories={viewingClient.dailyCalories}
+            allWorkouts={viewingClient.workoutLogs}
+            onUpdateUser={handleUpdateUser}
+            onDelete={handleDeleteViewing}
+          />
+        </div>
+      ) : page === "requests" ? (
+        <RequestsQueue
+          requests={requests}
+          onApproveClient={handleApprove}
+          onApproveSettled={handleApproveSettled}
+          onDeclineClient={handleDecline}
         />
       ) : (
-        <CoachDashboard
+        <ClientsRoster
           clients={clients}
-          requests={requests}
           nextCursor={nextCursor}
           rosterLoading={rosterLoading}
           onSearch={handleSearch}
           onLoadMore={handleLoadMore}
           onSelectClient={openClient}
-          onApproveClient={handleApprove}
-          onDeclineClient={handleDecline}
-          onDeleteClient={handleDelete}
         />
       )}
     </AppShell>

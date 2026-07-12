@@ -130,8 +130,7 @@ export const ROUTINES: Record<RoutineLocation, Record<2 | 3, Partial<Record<Work
         ]
       },
       // The source xlsx repeated the gym exercises here by mistake; this is
-      // a home-equipment substitute built from the Home 3-day push/pull days
-      // - pending the trainer's confirmation.
+      // a home-equipment substitute built from the Home 3-day push/pull days.
       "Upper Body": {
         warmup: [
           "Slow Arm Circles: 2 sets x 15 reps each side",
