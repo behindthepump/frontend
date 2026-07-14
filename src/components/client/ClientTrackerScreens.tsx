@@ -18,7 +18,8 @@ interface ClientTrackerScreensProps {
     clientId: string,
     week: number,
     workoutName: WorkoutName,
-    caloriesBurned?: number
+    caloriesBurned?: number,
+    notes?: string
   ) => Promise<string | null>;
 }
 
@@ -49,7 +50,9 @@ export default function ClientTrackerScreens({
         <ClientWorkouts
           user={user}
           allWorkouts={allWorkouts}
-          onToggleWorkout={(week, name, calories) => onToggleWorkout(user.id, week, name, calories)}
+          onToggleWorkout={(week, name, calories, notes) =>
+            onToggleWorkout(user.id, week, name, calories, notes)
+          }
         />
       );
     case "progress":
@@ -67,7 +70,11 @@ export default function ClientTrackerScreens({
     case "dashboard":
     default: {
       const weekWorkoutsDone = allWorkouts.filter(
-        (w) => w.user_id === user.id && w.week === stats.currentWeekNum && w.completed
+        (w) =>
+          w.user_id === user.id &&
+          w.week === stats.currentWeekNum &&
+          w.completed &&
+          w.workout_name !== "Personal"
       ).length;
       const loggedToday = allCalories.some((c) => c.user_id === user.id && c.date === todayStr());
       return (

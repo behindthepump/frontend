@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ClientSummary } from "../../store";
+import { WEEKLY_GOAL } from "../../data";
 import PaceTrack, { paceDelta } from "./PaceTrack";
 import RingAvatar from "./RingAvatar";
 import DotMeter from "./DotMeter";
@@ -158,8 +159,6 @@ export default function ClientsRoster({
                       : stats.program_status === "completed"
                       ? "Completed • 12 weeks"
                       : `Week ${stats.current_week} of 12`}
-                    {" · "}
-                    {client.workout_frequency}-day split
                   </p>
                 </div>
               </div>
@@ -192,9 +191,9 @@ export default function ClientsRoster({
                   <>
                     <DotMeter
                       Icon={Dumbbell}
-                      filled={stats.week_workouts_completed}
-                      total={client.workout_frequency}
-                      title={`${stats.week_workouts_completed} of ${client.workout_frequency} workouts this week`}
+                      filled={Math.min(stats.week_workouts_completed, WEEKLY_GOAL)}
+                      total={WEEKLY_GOAL}
+                      title={`${stats.week_workouts_completed} of ${WEEKLY_GOAL} workouts this week`}
                     />
                     <DotMeter
                       Icon={Flame}

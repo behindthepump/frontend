@@ -83,13 +83,9 @@ export default function CoachView({ session, onLogout }: CoachViewProps) {
 
   // --- Mutations: call the API, then refresh what the coach is looking at ---
 
-  const handleApprove = async (
-    uid: string,
-    programStartDate: string,
-    workoutFrequency: 2 | 3
-  ): Promise<string | null> => {
+  const handleApprove = async (uid: string, programStartDate: string): Promise<string | null> => {
     try {
-      await approveClient(uid, programStartDate, workoutFrequency);
+      await approveClient(uid, programStartDate);
     } catch (err) {
       return authErrorMessage(err);
     }

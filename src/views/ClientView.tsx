@@ -22,7 +22,8 @@ interface ClientViewProps {
     clientId: string,
     week: number,
     workoutName: WorkoutName,
-    caloriesBurned?: number
+    caloriesBurned?: number,
+    notes?: string
   ) => Promise<string | null>;
 }
 

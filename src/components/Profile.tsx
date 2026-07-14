@@ -21,8 +21,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
   const [startingWeight, setStartingWeight] = useState(user.starting_weight);
   const [targetWeight, setTargetWeight] = useState(user.target_weight);
   const [bmr, setBmr] = useState(user.bmr);
-  const [workoutFrequency, setWorkoutFrequency] = useState<2 | 3>(user.workout_frequency);
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -39,7 +38,6 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
       starting_weight: Number(startingWeight),
       target_weight: Number(targetWeight),
       bmr: Number(bmr),
-      workout_frequency: workoutFrequency,
     });
 
     if (error) {
@@ -204,28 +202,6 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-500 mb-2">Workouts Per Week</label>
-                <div className="flex rounded-xl border border-gray-100 overflow-hidden text-sm font-bold">
-                  {([2, 3] as const).map((freq) => (
-                    <button
-                      key={freq}
-                      type="button"
-                      onClick={() => setWorkoutFrequency(freq)}
-                      className={`flex-1 py-2.5 uppercase tracking-wider transition cursor-pointer ${
-                        workoutFrequency === freq
-                          ? "bg-[#111111] text-[#2ECC71]"
-                          : "bg-gray-50 text-gray-500 hover:bg-gray-100"
-                      }`}
-                    >
-                      {freq}-day
-                    </button>
-                  ))}
-                </div>
-                <p className="text-[10px] text-gray-400 mt-1.5 font-medium">
-                  Past weeks keep what was logged; the new split applies from now on.
-                </p>
-              </div>
             </div>
           </div>
 
@@ -315,8 +291,8 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
               </div>
 
               <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">Workouts Per Week</p>
-                <p className="text-gray-900 mt-1">{user.workout_frequency}-day split</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase font-sans tracking-wide">Weekly Workout Goal</p>
+                <p className="text-gray-900 mt-1">3 sessions · any split</p>
               </div>
 
               <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 sm:col-span-2">

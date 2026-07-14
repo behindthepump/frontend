@@ -17,11 +17,7 @@ function requestedAgo(iso: string): string {
 
 interface RequestsQueueProps {
   requests: User[]; // pending + declined signups
-  onApproveClient: (
-    clientId: string,
-    programStartDate: string,
-    workoutFrequency: 2 | 3
-  ) => Promise<string | null>;
+  onApproveClient: (clientId: string, programStartDate: string) => Promise<string | null>;
   // Called after the approved card's exit animation - refreshes the lists
   onApproveSettled: () => Promise<void>;
   onDeclineClient: (clientId: string) => Promise<string | null>;
@@ -40,10 +36,9 @@ export default function RequestsQueue({
   onDeclineClient
 }: RequestsQueueProps) {
   const [error, setError] = useState("");
-  // The request whose inline approve form (start date + frequency) is open
+  // The request whose inline approve form (start date) is open
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [approveDate, setApproveDate] = useState(mondayOf(todayStr()));
-  const [approveFreq, setApproveFreq] = useState<2 | 3>(3);
   const [busyId, setBusyId] = useState<string | null>(null);
   // The request whose secondary details (age/height/BMR/email) are open
   const [detailsId, setDetailsId] = useState<string | null>(null);
@@ -56,7 +51,6 @@ export default function RequestsQueue({
   const openApprove = (uid: string) => {
     setApprovingId(uid);
     setApproveDate(mondayOf(todayStr()));
-    setApproveFreq(3);
     setError("");
   };
 
@@ -65,7 +59,7 @@ export default function RequestsQueue({
     if (!approvingId) return;
     const uid = approvingId;
     setBusyId(uid);
-    const err = await onApproveClient(uid, approveDate, approveFreq);
+    const err = await onApproveClient(uid, approveDate);
     setBusyId(null);
     if (err) {
       setError(err);
@@ -213,27 +207,9 @@ export default function RequestsQueue({
                 required
               />
               <p className="text-[10px] text-gray-400 mt-1 font-medium normal-case">
-                Week 1 begins on the Monday of the selected week.
+                Week 1 begins on the Monday of the selected week. Clients pick their own workout
+                sets each week.
               </p>
-            </div>
-            <div>
-              <label className="block text-gray-400 uppercase mb-1.5 text-[10px]">Workouts Per Week</label>
-              <div className="flex rounded-xl border border-gray-200 overflow-hidden">
-                {([2, 3] as const).map((freq) => (
-                  <button
-                    key={freq}
-                    type="button"
-                    onClick={() => setApproveFreq(freq)}
-                    className={`flex-1 py-2 uppercase tracking-wider transition cursor-pointer ${
-                      approveFreq === freq
-                        ? "bg-[#111111] text-[#2ECC71]"
-                        : "bg-white text-gray-500 hover:bg-gray-100"
-                    }`}
-                  >
-                    {freq}-day
-                  </button>
-                ))}
-              </div>
             </div>
             <div className="flex space-x-2">
               <button

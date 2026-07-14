@@ -1,11 +1,35 @@
 import { User, DailyCalorie, WorkoutLog, WeeklySummary, WorkoutName } from "./types";
 
-// Workout slots per coach-set weekly frequency. Burn calories are entered
-// by the client at check-off, not fixed here.
-export const WORKOUT_SLOTS: Record<2 | 3, WorkoutName[]> = {
-  2: ["Lower Body", "Upper Body"],
-  3: ["Lower Body", "Upper Body Push", "Upper Body Pull"]
-};
+// Both splits are always offered - the client checks any mix each week
+// depending on their schedule. The soft weekly target is 3 sessions.
+export const WEEKLY_GOAL = 3;
+
+export const WORKOUT_PLANS: { title: string; sets: { name: WorkoutName; label: string }[] }[] = [
+  {
+    title: "2 Days/Week",
+    sets: [
+      { name: "Lower Body", label: "Lower Body" },
+      { name: "Upper Body", label: "Upper Body" }
+    ]
+  },
+  {
+    title: "3 Days/Week",
+    sets: [
+      { name: "Lower Body (3-Day)", label: "Lower Body" },
+      { name: "Upper Body Push", label: "Upper Body (Push)" },
+      { name: "Upper Body Pull", label: "Upper Body (Pull)" }
+    ]
+  }
+];
+
+// The five coach sets, flat (excludes the free-form "Personal" entry).
+export const WORKOUT_SETS = WORKOUT_PLANS.flatMap((p) => p.sets);
+
+// Preset burn for one ~1h resistance session: MET 3.5 x resting kcal/hour.
+// Prefills the check-off input; the client can correct it.
+export function presetBurn(bmr: number): number {
+  return Math.round((bmr * 3.5) / 24);
+}
 
 // Sanity cap on a self-reported workout burn (mirrors the backend).
 export const MAX_WORKOUT_CALORIES = 3000;
@@ -148,8 +172,12 @@ export function calculateUserStats(
   const currentWeekNum = getCurrentWeekNum(user);
   const programStatus = getProgramStatus(user);
 
-  const totalWorkouts = PROGRAM_WEEKS * user.workout_frequency; // 24 or 36
-  const workoutCompletionCount = userWorkouts.filter((w) => w.completed).length;
+  // Sessions count against the soft weekly goal; "Personal" is one weekly
+  // kcal total, not a countable session (its burn still joins the deficit).
+  const totalWorkouts = PROGRAM_WEEKS * WEEKLY_GOAL;
+  const workoutCompletionCount = userWorkouts.filter(
+    (w) => w.completed && w.workout_name !== "Personal"
+  ).length;
 
   // The client's most recent activity: latest calorie-log date or
   // workout check-off date. Null when they have never logged anything.

@@ -3,7 +3,8 @@ import { WorkoutName } from "./types";
 // Exercise routines from the client's "Blueprint_Workout routine_V01.xlsx".
 // Display-only reference: the app tracks completion + self-reported burn per
 // workout slot, never per exercise. Keyed by location (UI toggle, not
-// persisted) and the coach-set weekly frequency.
+// persisted); every set has a unique WorkoutName - the 2-day and 3-day
+// Lower Body days are different routines.
 
 export type RoutineLocation = "gym" | "home";
 
@@ -13,9 +14,8 @@ export interface Routine {
   finisher: string[]; // optional finishers; pick one
 }
 
-export const ROUTINES: Record<RoutineLocation, Record<2 | 3, Partial<Record<WorkoutName, Routine>>>> = {
+export const ROUTINES: Record<RoutineLocation, Partial<Record<WorkoutName, Routine>>> = {
   gym: {
-    2: {
       "Lower Body": {
         warmup: [
           "BW Squats: 2 sets x 12 reps",
@@ -51,10 +51,8 @@ export const ROUTINES: Record<RoutineLocation, Record<2 | 3, Partial<Record<Work
           "Sit Ups: 2 sets x 15 reps",
           "Forearm Planks: 2 sets x 40 secs"
         ]
-      }
-    },
-    3: {
-      "Lower Body": {
+      },
+      "Lower Body (3-Day)": {
         warmup: [
           "BW Squats: 2 sets x 12 reps",
           "Hip Opener: 2 sets x 30 secs each side",
@@ -108,10 +106,8 @@ export const ROUTINES: Record<RoutineLocation, Record<2 | 3, Partial<Record<Work
           "Lying Leg Raises / Knee Raises: 3 sets x 15 reps"
         ]
       }
-    }
   },
   home: {
-    2: {
       "Lower Body": {
         warmup: [
           "Body Weight Squats: 2 sets x 12 reps",
@@ -149,10 +145,8 @@ export const ROUTINES: Record<RoutineLocation, Record<2 | 3, Partial<Record<Work
           "Sit Ups: 2 sets x 15 reps",
           "Forearm Planks: 2 sets x 40 secs"
         ]
-      }
-    },
-    3: {
-      "Lower Body": {
+      },
+      "Lower Body (3-Day)": {
         warmup: [
           "Body Weight Squats: 2 sets x 12 reps",
           "Hip Opener: 2 sets x 30 secs each side",
@@ -203,6 +197,5 @@ export const ROUTINES: Record<RoutineLocation, Record<2 | 3, Partial<Record<Work
           "Dumbbell Bicep Curls: 2 sets x 12 reps"
         ]
       }
-    }
   }
 };

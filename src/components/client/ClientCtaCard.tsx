@@ -1,5 +1,5 @@
 import { User } from "../../types";
-import { ProgramStatus } from "../../data";
+import { ProgramStatus, WEEKLY_GOAL } from "../../data";
 import { Activity, Calendar, Dumbbell, CheckCircle2, Flame } from "lucide-react";
 
 interface ClientCtaCardProps {
@@ -19,7 +19,7 @@ export default function ClientCtaCard({
   loggedToday,
   onNavigate
 }: ClientCtaCardProps) {
-  const workoutsLeft = user.workout_frequency - weekWorkoutsDone;
+  const workoutsLeft = Math.max(0, WEEKLY_GOAL - weekWorkoutsDone);
 
   if (programStatus === "not_started") {
     return (
@@ -71,7 +71,7 @@ export default function ClientCtaCard({
           <Dumbbell className="w-8 h-8 text-[#2ECC71]" />
           <h3 className="text-lg font-extrabold tracking-tight">Up Next: Workouts</h3>
           <div className="flex items-center gap-1.5">
-            {Array.from({ length: user.workout_frequency }, (_, i) => (
+            {Array.from({ length: WEEKLY_GOAL }, (_, i) => (
               <span
                 key={i}
                 className={`w-2 h-2 rounded-full ${i < weekWorkoutsDone ? "bg-[#2ECC71]" : "bg-gray-700"}`}
@@ -79,9 +79,9 @@ export default function ClientCtaCard({
             ))}
           </div>
           <p className="text-xs text-gray-400 leading-relaxed">
-            {weekWorkoutsDone} of {user.workout_frequency} done this week —{" "}
-            {workoutsLeft === 1 ? "one session left" : `${workoutsLeft} sessions left`}. Check one off when
-            it's done.
+            {weekWorkoutsDone} of {WEEKLY_GOAL} done this week —{" "}
+            {workoutsLeft === 1 ? "one session left" : `${workoutsLeft} sessions left`}. Pick any set
+            that fits your schedule and check it off.
           </p>
         </div>
         <button
@@ -102,7 +102,7 @@ export default function ClientCtaCard({
           <Flame className="w-8 h-8 text-[#2ECC71]" />
           <h3 className="text-lg font-extrabold tracking-tight">Workouts Done ✓</h3>
           <p className="text-xs text-gray-400 leading-relaxed">
-            All {user.workout_frequency} sessions are in this week. One thing left today: log what you ate.
+            All {WEEKLY_GOAL} sessions are in this week. One thing left today: log what you ate.
           </p>
         </div>
         <button

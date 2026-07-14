@@ -144,11 +144,6 @@ export default function App() {
   ): Promise<string | null> => {
     if (!canWriteFor(clientId)) return "Not allowed.";
     if (dateStr > todayStr()) return "That day hasn't happened yet — you can log it when it does.";
-    // Past days are append-only: log a missed day once, edit only today
-    const alreadyLogged = dailyCalories.some((c) => c.user_id === clientId && c.date === dateStr);
-    if (dateStr < todayStr() && alreadyLogged) {
-      return "Past entries are locked — only today's log can be edited.";
-    }
     if (!Number.isFinite(calories) || calories < 0 || calories > 10000) {
       return "Calories must be between 0 and 10000.";
     }
@@ -186,13 +181,15 @@ export default function App() {
     return null;
   };
 
-  // Complete/Incomplete workouts. Completing requires the client-reported
-  // burn; unchecking clears it. Returns an error message or null.
+  // Save/uncheck workouts. Passing caloriesBurned marks the workout done
+  // with that burn (first check-off or edit); omitting it unchecks.
+  // Returns an error message or null.
   const handleToggleWorkout = async (
     clientId: string,
     week: number,
     workoutName: WorkoutName,
-    caloriesBurned?: number
+    caloriesBurned?: number,
+    notes?: string
   ): Promise<string | null> => {
     if (!canWriteFor(clientId)) return "Not allowed.";
 
@@ -207,20 +204,13 @@ export default function App() {
     const existing = workoutLogs.find(
       (w) => w.user_id === clientId && w.week === week && w.workout_name === workoutName
     );
-    const nowCompleted = existing ? !existing.completed : true;
-
-    // Past weeks are append-only, like daily logs: a missed workout can be
-    // checked off late, but completed past-week workouts are locked.
-    if (week < getWeekForDate(todayStr(), client.program_start_date) && existing?.completed) {
-      return "Past weeks are locked — completed workouts there can't be unchecked.";
-    }
+    const nowCompleted = caloriesBurned !== undefined;
 
     if (nowCompleted) {
       if (
-        caloriesBurned === undefined ||
         !Number.isFinite(caloriesBurned) ||
-        caloriesBurned < 0 ||
-        caloriesBurned > MAX_WORKOUT_CALORIES
+        caloriesBurned! < 0 ||
+        caloriesBurned! > MAX_WORKOUT_CALORIES
       ) {
         return `Calories burned must be between 0 and ${MAX_WORKOUT_CALORIES}.`;
       }
@@ -233,7 +223,8 @@ export default function App() {
       workout_name: workoutName,
       calories_burned: nowCompleted ? caloriesBurned! : 0,
       completed: nowCompleted,
-      completed_at: nowCompleted ? todayStr() : null
+      completed_at: nowCompleted ? todayStr() : null,
+      notes: nowCompleted ? notes : undefined
     };
 
     try {

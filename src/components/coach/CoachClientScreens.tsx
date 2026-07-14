@@ -5,7 +5,8 @@ import {
   getProgramWeekDates,
   todayStr,
   formatShortDate,
-  PROGRAM_WEEKS
+  PROGRAM_WEEKS,
+  WEEKLY_GOAL
 } from "../../data";
 import { recency, RECENCY_CHIP_DARK } from "./recency";
 import { ClipboardList, User as UserIcon, Dumbbell, Flame } from "lucide-react";
@@ -66,7 +67,11 @@ export default function CoachClientScreens({
   let weekDaysElapsed = 0;
   if (isActive) {
     weekWorkoutsDone = allWorkouts.filter(
-      (w) => w.user_id === user.id && w.week === stats.currentWeekNum && w.completed
+      (w) =>
+        w.user_id === user.id &&
+        w.week === stats.currentWeekNum &&
+        w.completed &&
+        w.workout_name !== "Personal"
     ).length;
     const loggedDates = new Set(
       allCalories.filter((c) => c.user_id === user.id).map((c) => c.date)
@@ -105,7 +110,6 @@ export default function CoachClientScreens({
                     : stats.programStatus === "completed"
                     ? "Program complete • 12 weeks"
                     : `Week ${stats.currentWeekNum} of ${PROGRAM_WEEKS} • started ${formatShortDate(user.program_start_date)}`}
-                  {" • "}{user.workout_frequency}-day split
                 </span>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${RECENCY_CHIP_DARK[rec.key]}`}>
                   {rec.label}
@@ -180,9 +184,9 @@ export default function CoachClientScreens({
               <DotMeter
                 dark
                 Icon={Dumbbell}
-                filled={weekWorkoutsDone}
-                total={user.workout_frequency}
-                title={`${weekWorkoutsDone} of ${user.workout_frequency} workouts this week`}
+                filled={Math.min(weekWorkoutsDone, WEEKLY_GOAL)}
+                total={WEEKLY_GOAL}
+                title={`${weekWorkoutsDone} of ${WEEKLY_GOAL} workouts this week`}
               />
               <DotMeter
                 dark

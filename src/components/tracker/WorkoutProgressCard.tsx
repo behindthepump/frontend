@@ -1,6 +1,6 @@
 import React from "react";
 import { User, WorkoutLog } from "../../types";
-import { PROGRAM_WEEKS } from "../../data";
+import { PROGRAM_WEEKS, WEEKLY_GOAL } from "../../data";
 import DotMeter from "../coach/DotMeter";
 import CountUp from "../coach/CountUp";
 import { Trophy, Dumbbell } from "lucide-react";
@@ -19,11 +19,15 @@ export default function WorkoutProgressCard({ user, allWorkouts, viewWeek, foote
   const userWorkouts = allWorkouts.filter((w) => w.user_id === user.id);
   const weekCompleted = userWorkouts.filter((w) => w.week === viewWeek && w.completed);
   const weekBurned = weekCompleted.reduce((sum, w) => sum + w.calories_burned, 0);
+  // Burn counts everything (incl. the "Personal" weekly entry); session
+  // counts track coach sets only against the soft weekly goal.
+  const weekSessions = weekCompleted.filter((w) => w.workout_name !== "Personal").length;
 
-  const totalWorkoutsCount = PROGRAM_WEEKS * user.workout_frequency;
+  const totalWorkoutsCount = PROGRAM_WEEKS * WEEKLY_GOAL;
   const completedWorkouts = userWorkouts.filter((w) => w.completed);
+  const completedSessions = completedWorkouts.filter((w) => w.workout_name !== "Personal").length;
   const totalBurned = completedWorkouts.reduce((sum, w) => sum + w.calories_burned, 0);
-  const progressPercent = Math.round((completedWorkouts.length / totalWorkoutsCount) * 100);
+  const progressPercent = Math.min(100, Math.round((completedSessions / totalWorkoutsCount) * 100));
 
   return (
     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs lg:col-span-2 space-y-5 flex flex-col justify-between" id="workout-progress-card">
@@ -42,12 +46,12 @@ export default function WorkoutProgressCard({ user, allWorkouts, viewWeek, foote
           <div className="flex items-center gap-3 mt-3">
             <DotMeter
               Icon={Dumbbell}
-              filled={weekCompleted.length}
-              total={user.workout_frequency}
-              title={`${weekCompleted.length} of ${user.workout_frequency} sessions done in week ${viewWeek}`}
+              filled={Math.min(weekSessions, WEEKLY_GOAL)}
+              total={WEEKLY_GOAL}
+              title={`${weekSessions} of ${WEEKLY_GOAL} sessions done in week ${viewWeek}`}
             />
             <span className="text-[10px] text-gray-400 font-medium">
-              {weekCompleted.length} of {user.workout_frequency} sessions
+              {weekSessions} of {WEEKLY_GOAL} sessions
             </span>
           </div>
         </div>
@@ -57,7 +61,7 @@ export default function WorkoutProgressCard({ user, allWorkouts, viewWeek, foote
           <div className="flex justify-between items-center">
             <span className="text-xs font-bold text-gray-500 uppercase">Program</span>
             <span className="font-mono text-sm font-extrabold text-gray-900">
-              {completedWorkouts.length}
+              {completedSessions}
               <span className="text-xs font-normal text-gray-400"> / {totalWorkoutsCount} · {progressPercent}%</span>
             </span>
           </div>

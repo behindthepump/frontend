@@ -12,7 +12,8 @@ interface ClientWorkoutsProps {
   onToggleWorkout: (
     week: number,
     workoutName: WorkoutName,
-    caloriesBurned?: number
+    caloriesBurned?: number,
+    notes?: string
   ) => Promise<string | null>;
 }
 
@@ -51,7 +52,7 @@ export default function ClientWorkouts({ user, allWorkouts, onToggleWorkout }: C
           currentWeekNum={currentWeekNum}
           isCurrentActiveWeek={viewWeek === currentWeekNum && programStatus === "active"}
           onChangeWeek={(delta) => setViewWeek((w) => Math.min(currentWeekNum, Math.max(1, w + delta)))}
-          onToggle={(name, calories) => onToggleWorkout(viewWeek, name, calories)}
+          onToggle={(name, calories, notes) => onToggleWorkout(viewWeek, name, calories, notes)}
         />
         <WorkoutProgressCard
           user={user}
@@ -61,8 +62,8 @@ export default function ClientWorkouts({ user, allWorkouts, onToggleWorkout }: C
             <>
               <Info className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
               <span>
-                Mistakes this week? Tap a checked workout to uncheck it. Past weeks are locked — but you
-                can still check off any session you missed.
+                Made a mistake? Tap a checked workout to uncheck it — any week, any time. You can
+                also check off sessions you missed in past weeks.
               </span>
             </>
           }

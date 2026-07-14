@@ -10,8 +10,10 @@ export interface AppData {
   workoutLogs: WorkoutLog[];
 }
 
+// "Lower Body (3-Day)" -> "lower-body-3-day"; legacy names keep their keys.
 function workoutKey(week: number, workoutName: string): string {
-  return `w${week}_${workoutName.toLowerCase().replace(/\s+/g, "-")}`;
+  const slug = workoutName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return `w${week}_${slug}`;
 }
 
 // The signed-in client's own bootstrap load (the coach's roster is served
@@ -84,13 +86,9 @@ export async function submitOnboarding(fields: OnboardingFields): Promise<void> 
 // and returns the final values to mirror into local state.
 export async function approveClient(
   uid: string,
-  programStartDate: string,
-  workoutFrequency: 2 | 3
-): Promise<{ program_start_date: string; workout_frequency: 2 | 3 }> {
-  return apiPost(`/v1/clients/${uid}/approve`, {
-    program_start_date: programStartDate,
-    workout_frequency: workoutFrequency
-  });
+  programStartDate: string
+): Promise<{ program_start_date: string }> {
+  return apiPost(`/v1/clients/${uid}/approve`, { program_start_date: programStartDate });
 }
 
 export async function declineClient(uid: string): Promise<void> {
@@ -112,7 +110,8 @@ export async function saveWorkoutLog(uid: string, log: WorkoutLog): Promise<void
     workout_name: log.workout_name,
     calories_burned: log.calories_burned,
     completed: log.completed,
-    completed_at: log.completed_at
+    completed_at: log.completed_at,
+    notes: log.notes ?? ""
   });
 }
 
@@ -124,8 +123,7 @@ export async function saveProfile(user: User): Promise<void> {
     height: user.height,
     starting_weight: user.starting_weight,
     target_weight: user.target_weight,
-    bmr: user.bmr,
-    workout_frequency: user.workout_frequency
+    bmr: user.bmr
   });
 }
 

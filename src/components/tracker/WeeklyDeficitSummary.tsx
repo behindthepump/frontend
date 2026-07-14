@@ -116,7 +116,9 @@ export default function WeeklyDeficitSummary({
             Each logged day counts as your daily budget of {user.bmr.toLocaleString()} kcal (your BMR —
             what your body burns at rest) minus what you ate. Completed workouts add their burn on
             top, and every 7,700 kcal of deficit ≈ 1 kg lost. Unlogged days count as zero, so logging
-            protects your progress.
+            protects your progress. Note that the daily budget doesn't account for your daily
+            movements and activities — the more active your day is, the more calories you burn, which
+            is a bonus.
           </p>
         </Expand>
       </div>

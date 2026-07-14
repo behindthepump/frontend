@@ -5,7 +5,8 @@ import {
   getProgramWeekDates,
   todayStr,
   formatShortDate,
-  PROGRAM_WEEKS
+  PROGRAM_WEEKS,
+  WEEKLY_GOAL
 } from "../data";
 import { paceDelta } from "./coach/PaceTrack";
 import DotMeter from "./coach/DotMeter";
@@ -66,8 +67,9 @@ export default function Dashboard({
   const daysLoggedThisWeek = currentWeekCalories.filter((c) => c.date <= today).length;
   const dow = new Date().getDay();
   const weekDaysElapsed = dow === 0 ? 7 : dow;
+  // Sessions against the soft weekly goal ("Personal" is kcal, not a session)
   const weekWorkoutsDone = allWorkouts.filter(
-    (w) => w.user_id === user.id && w.week === currentWeekNum && w.completed
+    (w) => w.user_id === user.id && w.week === currentWeekNum && w.completed && w.workout_name !== "Personal"
   ).length;
 
   // Pace verdict - same math the coach sees, client-voiced
@@ -276,9 +278,9 @@ export default function Dashboard({
                 />
                 <DotMeter
                   Icon={Dumbbell}
-                  filled={weekWorkoutsDone}
-                  total={user.workout_frequency}
-                  title={`${weekWorkoutsDone} of ${user.workout_frequency} workouts done this week`}
+                  filled={Math.min(weekWorkoutsDone, WEEKLY_GOAL)}
+                  total={WEEKLY_GOAL}
+                  title={`${weekWorkoutsDone} of ${WEEKLY_GOAL} workouts done this week`}
                 />
                 <span className="text-[10px] text-gray-400 font-medium">days logged · workouts</span>
               </div>

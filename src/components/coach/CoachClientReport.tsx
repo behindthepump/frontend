@@ -7,8 +7,9 @@ import {
   todayStr,
   formatShortDate,
   addDays,
-  WORKOUT_SLOTS,
-  PROGRAM_WEEKS
+  WORKOUT_SETS,
+  PROGRAM_WEEKS,
+  WEEKLY_GOAL
 } from "../../data";
 import {
   LineChart,
@@ -49,7 +50,7 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
 
   // Every tooltip show/hide re-renders this component - memoize the derived
   // data so hovering doesn't recompute a program's worth of stats each time.
-  const { stats, caloriesByDate, userWorkouts, slots, today, joined, elapsedDays, loggedDays, loggedPct, elapsedWeek, chartData, notes } =
+  const { stats, caloriesByDate, userWorkouts, today, joined, elapsedDays, loggedDays, loggedPct, elapsedWeek, chartData, notes } =
     useMemo(() => {
       const stats = calculateUserStats(user, allCalories, allWorkouts);
       const today = todayStr();
@@ -58,7 +59,6 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
       const userCalories = allCalories.filter((c) => c.user_id === user.id);
       const caloriesByDate = new Map(userCalories.map((c) => [c.date, c]));
       const userWorkouts = allWorkouts.filter((w) => w.user_id === user.id);
-      const slots = WORKOUT_SLOTS[user.workout_frequency];
 
       // Elapsed loggable days (for adherence) - starts at approval, not the
       // Monday-anchored program start, so pre-join days don't count against
@@ -88,12 +88,26 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
           };
         });
 
-      const notes = userCalories
-        .filter((c) => c.notes)
+      // Food-log notes + "Personal" workout notes, newest first - both are
+      // the client talking to the coach.
+      const notes = [
+        ...userCalories
+          .filter((c) => c.notes)
+          .map((c) => ({ key: `cal-${c.date}`, date: c.date, kcal: c.calories, text: c.notes!, workout: false })),
+        ...userWorkouts
+          .filter((w) => w.workout_name === "Personal" && w.completed && w.notes)
+          .map((w) => ({
+            key: `per-${w.week}`,
+            date: w.completed_at ?? "",
+            kcal: w.calories_burned,
+            text: `Week ${w.week} personal workout: ${w.notes!}`,
+            workout: true
+          }))
+      ]
         .sort((a, b) => b.date.localeCompare(a.date))
         .slice(0, 6);
 
-      return { stats, caloriesByDate, userWorkouts, slots, today, joined, elapsedDays, loggedDays, loggedPct, elapsedWeek, chartData, notes };
+      return { stats, caloriesByDate, userWorkouts, today, joined, elapsedDays, loggedDays, loggedPct, elapsedWeek, chartData, notes };
     }, [user, allCalories, allWorkouts]);
 
   // Stable element identity lets React skip the whole recharts subtree on
@@ -184,7 +198,7 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
           Icon={Dumbbell}
           label="Workouts"
           value={<><CountUp value={stats.workoutCompletionCount} />/{stats.totalWorkouts}</>}
-          sub={`${user.workout_frequency} per week`}
+          sub={`goal ${WEEKLY_GOAL} per week`}
         />
       </div>
 
@@ -282,16 +296,16 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                   <span className="w-4 shrink-0" />
 
                   <span className="flex items-center gap-1 shrink-0">
-                    {slots.map((slot) => {
-                      const log = weekWorkouts.find((w) => w.workout_name === slot);
+                    {WORKOUT_SETS.map(({ name }) => {
+                      const log = weekWorkouts.find((w) => w.workout_name === name);
                       const done = log?.completed === true;
                       return (
                         <span
-                          key={slot}
+                          key={name}
                           {...tipHandlers(
                             done
-                              ? `${slot}: done${log?.completed_at ? ` ${formatShortDate(log.completed_at)}` : ""} (+${log?.calories_burned} kcal)`
-                              : `${slot}: not done`
+                              ? `${name}: done${log?.completed_at ? ` ${formatShortDate(log.completed_at)}` : ""} (+${log?.calories_burned} kcal)`
+                              : `${name}: not done`
                           )}
                           className={`w-3 h-3 rounded-full shrink-0 transition duration-150 hover:scale-125 ${
                             done
@@ -303,6 +317,18 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                         />
                       );
                     })}
+                    {(() => {
+                      // The free-form personal entry, only when it exists
+                      const per = weekWorkouts.find((w) => w.workout_name === "Personal" && w.completed);
+                      return per ? (
+                        <span
+                          {...tipHandlers(
+                            `Personal: +${per.calories_burned} kcal${per.notes ? ` — ${per.notes}` : ""}`
+                          )}
+                          className="w-3 h-3 rounded-full shrink-0 transition duration-150 hover:scale-125 bg-[#2ECC71]"
+                        />
+                      ) : null;
+                    })()}
                   </span>
 
                   <span
@@ -340,6 +366,9 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#111111]" /> workout done
               </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#2ECC71]" /> personal workout
+              </span>
               <span className="text-gray-300">• hover any cell for detail</span>
             </div>
           </div>
@@ -375,15 +404,19 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
           ) : (
             <ul className="space-y-2">
               {notes.map((entry) => (
-                <li key={entry.date} className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5">
+                <li key={entry.key} className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5">
                   <div className="flex justify-between items-baseline gap-2 text-[10px] font-bold font-mono">
-                    <span className="text-gray-500">{formatShortDate(entry.date)}</span>
+                    <span className="text-gray-500">{entry.date ? formatShortDate(entry.date) : "—"}</span>
                     <span className="text-gray-900 flex items-center gap-1">
-                      <Flame className="w-3 h-3 text-orange-400" />
-                      {entry.calories} kcal
+                      {entry.workout ? (
+                        <Dumbbell className="w-3 h-3 text-[#2ECC71]" />
+                      ) : (
+                        <Flame className="w-3 h-3 text-orange-400" />
+                      )}
+                      {entry.workout ? `+${entry.kcal}` : entry.kcal} kcal
                     </span>
                   </div>
-                  <p className="text-xs text-gray-700 font-medium mt-1">{entry.notes}</p>
+                  <p className="text-xs text-gray-700 font-medium mt-1">{entry.text}</p>
                 </li>
               ))}
             </ul>
