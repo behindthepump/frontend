@@ -95,7 +95,7 @@ export default function Dashboard({
           <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>
         </div>
         <div className="flex items-center space-x-2 bg-[#111111] text-white px-5 py-3 rounded-xl border border-gray-800 shadow-sm shrink-0">
-          <Calendar className="w-5 h-5 text-[#2ECC71]" />
+          <Calendar className="w-5 h-5 text-[#A66A00]" />
           <span className="font-mono text-sm font-semibold uppercase tracking-wider">
             {programStatus === "not_started"
               ? `Starts ${user.program_start_date}`
@@ -123,7 +123,7 @@ export default function Dashboard({
                 {!todayEntry ? (
                   <span className="text-gray-400">Nothing logged yet — your body burns {user.bmr.toLocaleString()} kcal at rest</span>
                 ) : deficitToday >= 0 ? (
-                  <span className="text-[#2ECC71] font-bold">{deficitToday.toLocaleString()} kcal deficit so far — keep it up</span>
+                  <span className="text-[#FEC63F] font-bold">{deficitToday.toLocaleString()} kcal deficit so far — keep it up</span>
                 ) : (
                   <span className="text-orange-400 font-bold">{(-deficitToday).toLocaleString()} kcal over your resting burn</span>
                 )}
@@ -132,7 +132,7 @@ export default function Dashboard({
 
             <button
               onClick={() => onNavigate("daily")}
-              className="bg-[#2ECC71] hover:bg-[#27ae60] text-[#111111] font-extrabold text-xs py-2.5 px-5 rounded-xl uppercase tracking-wider transition hover:scale-[1.02] active:scale-[0.97] flex items-center space-x-2 cursor-pointer shrink-0"
+              className="bg-[#FEC63F] hover:bg-[#F0B41E] text-[#111111] font-extrabold text-xs py-2.5 px-5 rounded-xl uppercase tracking-wider transition hover:scale-[1.02] active:scale-[0.97] flex items-center space-x-2 cursor-pointer shrink-0"
             >
               {todayEntry ? <Pencil className="w-3.5 h-3.5" /> : <Flame className="w-3.5 h-3.5" />}
               <span>{todayEntry ? "Update Today's Log" : "Log Today"}</span>
@@ -143,7 +143,7 @@ export default function Dashboard({
           <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden mt-4">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
-                deficitToday >= 0 ? "bg-[#2ECC71]" : "bg-orange-400"
+                deficitToday >= 0 ? "bg-[#FEC63F]" : "bg-orange-400"
               }`}
               style={{ width: `${Math.min(100, Math.round((eatenToday / user.bmr) * 100))}%` }}
             />
@@ -155,7 +155,7 @@ export default function Dashboard({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" id="kpi-cards-grid">
         <div
           onClick={() => onNavigate("profile")}
-          className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs hover:border-[#2ECC71]/40 transition duration-250 cursor-pointer group"
+          className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs hover:border-[#FEC63F]/40 transition duration-250 cursor-pointer group"
           id="kpi-card-weight"
         >
           <div className="flex justify-between items-start">
@@ -165,8 +165,8 @@ export default function Dashboard({
                 <CountUp value={currentWeight} /> <span className="text-sm font-normal text-gray-500">kg</span>
               </h3>
             </div>
-            <div className="bg-gray-50 group-hover:bg-[#2ECC71]/10 p-3 rounded-xl transition">
-              <Scale className="w-6 h-6 text-gray-400 group-hover:text-[#2ECC71] transition" />
+            <div className="bg-gray-50 group-hover:bg-[#FEC63F]/10 p-3 rounded-xl transition">
+              <Scale className="w-6 h-6 text-gray-400 group-hover:text-[#A66A00] transition" />
             </div>
           </div>
           <div className="mt-4 text-xs text-gray-400">
@@ -176,18 +176,18 @@ export default function Dashboard({
 
         <div
           onClick={() => onNavigate("progress")}
-          className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs hover:border-[#2ECC71]/40 transition duration-250 cursor-pointer group"
+          className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs hover:border-[#FEC63F]/40 transition duration-250 cursor-pointer group"
           id="kpi-card-weight-loss"
         >
           <div className="flex justify-between items-start">
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Weight Lost</p>
-              <h3 className="text-3xl font-extrabold text-[#2ECC71] mt-2 font-mono" id="weight-loss-value">
+              <h3 className="text-3xl font-extrabold text-[#A66A00] mt-2 font-mono" id="weight-loss-value">
                 <CountUp value={totalWeightLost} /> <span className="text-sm font-normal text-gray-500">of {goalKg} kg</span>
               </h3>
             </div>
-            <div className="bg-[#2ECC71]/10 p-3 rounded-xl">
-              <TrendingUp className="w-6 h-6 text-[#2ECC71]" />
+            <div className="bg-[#FEC63F]/10 p-3 rounded-xl">
+              <TrendingUp className="w-6 h-6 text-[#A66A00]" />
             </div>
           </div>
           <div className="mt-4 flex items-center justify-between gap-2 text-xs text-gray-400">
@@ -202,7 +202,7 @@ export default function Dashboard({
 
         <div
           onClick={() => onNavigate("workout")}
-          className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs hover:border-[#2ECC71]/40 transition duration-250 cursor-pointer group"
+          className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs hover:border-[#FEC63F]/40 transition duration-250 cursor-pointer group"
           id="kpi-card-workouts"
         >
           <div className="flex justify-between items-start">
@@ -212,8 +212,8 @@ export default function Dashboard({
                 <CountUp value={workoutCompletionCount} /> <span className="text-sm font-normal text-gray-500">/ {totalWorkouts}</span>
               </h3>
             </div>
-            <div className="bg-gray-50 group-hover:bg-[#2ECC71]/10 p-3 rounded-xl transition">
-              <Dumbbell className="w-6 h-6 text-gray-400 group-hover:text-[#2ECC71] transition" />
+            <div className="bg-gray-50 group-hover:bg-[#FEC63F]/10 p-3 rounded-xl transition">
+              <Dumbbell className="w-6 h-6 text-gray-400 group-hover:text-[#A66A00] transition" />
             </div>
           </div>
           <div className="mt-4 w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
@@ -241,7 +241,7 @@ export default function Dashboard({
             </div>
             <button
               onClick={() => onNavigate("progress")}
-              className="text-[#2ECC71] hover:text-[#27ae60] text-xs font-semibold flex items-center transition cursor-pointer"
+              className="text-[#A66A00] hover:text-[#F0B41E] text-xs font-semibold flex items-center transition cursor-pointer"
             >
               View All Weeks <ChevronRight className="w-4 h-4 ml-1" />
             </button>
@@ -295,11 +295,11 @@ export default function Dashboard({
       <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs" id="progress-bar-container">
         <div className="flex justify-between items-center mb-3">
           <p className="text-sm font-bold text-gray-900">Program Timeline</p>
-          <span className="text-sm font-extrabold text-[#2ECC71] font-mono">{overallProgressPercent}%</span>
+          <span className="text-sm font-extrabold text-[#A66A00] font-mono">{overallProgressPercent}%</span>
         </div>
         <div className="w-full bg-gray-100 h-8 rounded-xl p-1 flex items-center overflow-hidden font-mono text-xs">
           <div
-            className="bg-[#111111] h-full rounded-lg transition-all duration-500 flex items-center justify-end pr-2 text-[#2ECC71] font-bold"
+            className="bg-[#111111] h-full rounded-lg transition-all duration-500 flex items-center justify-end pr-2 text-[#FEC63F] font-bold"
             style={{ width: `${overallProgressPercent}%` }}
           >
             {overallProgressPercent >= 15 && barLabel}

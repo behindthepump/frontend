@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dumbbell, Hourglass, XCircle, RefreshCw, Check, ChevronRight } from "lucide-react";
+import { Hourglass, XCircle, RefreshCw, Check, ChevronRight } from "lucide-react";
 
 interface WaitlistProps {
   status: "pending" | "declined";
@@ -41,7 +41,7 @@ export default function Waitlist({ status, name, onRefresh, onLogout }: Waitlist
       <div className="w-full max-w-sm text-center space-y-6 animate-fadeIn">
         {/* Brand block, matching the Login screen */}
         <div className="space-y-2">
-          <Dumbbell className="w-10 h-10 text-[#2ECC71] mx-auto" />
+          <img src="/brand-logo.png" alt="Behind the Pump" className="h-14 w-auto mx-auto" />
           <h1 className="text-lg font-black uppercase tracking-wider text-white">Transformation</h1>
           <p className="text-[10px] text-gray-500 font-mono tracking-widest uppercase">12-Week Tracker</p>
         </div>
@@ -52,11 +52,11 @@ export default function Waitlist({ status, name, onRefresh, onLogout }: Waitlist
           {pending && (
             <div className="flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider">
               <span className="text-gray-500 flex items-center gap-1">
-                <Check className="w-3 h-3 text-[#2ECC71]" />
+                <Check className="w-3 h-3 text-[#FEC63F]" />
                 Your details
               </span>
               <ChevronRight className="w-3 h-3 text-gray-700" />
-              <span className="text-[#2ECC71]">2 · Coach review</span>
+              <span className="text-[#FEC63F]">2 · Coach review</span>
               <ChevronRight className="w-3 h-3 text-gray-700" />
               <span className="text-gray-600">3 · 12 weeks</span>
             </div>
@@ -64,7 +64,7 @@ export default function Waitlist({ status, name, onRefresh, onLogout }: Waitlist
 
           <div className="space-y-3">
             {pending ? (
-              <Hourglass className="w-10 h-10 text-[#2ECC71] mx-auto animate-pulse" />
+              <Hourglass className="w-10 h-10 text-[#FEC63F] mx-auto animate-pulse" />
             ) : (
               <XCircle className="w-10 h-10 text-orange-400 mx-auto" />
             )}
@@ -83,7 +83,7 @@ export default function Waitlist({ status, name, onRefresh, onLogout }: Waitlist
           <button
             onClick={() => void handleCheck()}
             disabled={checking}
-            className="w-full bg-[#2ECC71] hover:bg-[#27ae60] text-[#111111] text-xs font-extrabold px-5 py-3 rounded-xl uppercase tracking-wider cursor-pointer transition hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#FEC63F] hover:bg-[#F0B41E] text-[#111111] text-xs font-extrabold px-5 py-3 rounded-xl uppercase tracking-wider cursor-pointer transition hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RefreshCw className={`w-4 h-4 ${checking ? "animate-spin" : ""}`} />
             <span>{checking ? "Checking…" : "Check My Status"}</span>

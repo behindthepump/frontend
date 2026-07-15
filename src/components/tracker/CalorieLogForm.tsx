@@ -62,7 +62,7 @@ export default function CalorieLogForm({ user, selectedDate, existing, foodAdd, 
       <div className="flex justify-between items-center gap-2 border-b border-gray-100 pb-3">
         <h3 className="text-lg font-extrabold text-gray-900">Log Your Day</h3>
         <span className="flex items-center space-x-1.5 bg-gray-50 border border-gray-100 rounded-lg px-2.5 py-1 font-mono text-xs font-bold text-gray-700 shrink-0">
-          <Calendar className="w-3.5 h-3.5 text-[#2ECC71]" />
+          <Calendar className="w-3.5 h-3.5 text-[#A66A00]" />
           <span>{selectedDate === todayStr ? "Today" : selectedDate}</span>
         </span>
       </div>
@@ -79,7 +79,7 @@ export default function CalorieLogForm({ user, selectedDate, existing, foodAdd, 
               placeholder="e.g. 1800"
               value={caloriesInput}
               onChange={(e) => setCaloriesInput(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-100 focus:border-[#2ECC71] focus:bg-white text-gray-900 font-bold font-mono py-3 pl-4 pr-12 rounded-xl transition outline-none"
+              className="w-full bg-gray-50 border border-gray-100 focus:border-[#FEC63F] focus:bg-white text-gray-900 font-bold font-mono py-3 pl-4 pr-12 rounded-xl transition outline-none"
               min="0"
               max="10000"
               required
@@ -93,7 +93,7 @@ export default function CalorieLogForm({ user, selectedDate, existing, foodAdd, 
               {user.bmr - Number(caloriesInput) >= 0 ? (
                 <>
                   Nice —{" "}
-                  <span className="font-bold font-mono text-[#2ECC71]">
+                  <span className="font-bold font-mono text-[#A66A00]">
                     {(user.bmr - Number(caloriesInput)).toLocaleString()} kcal
                   </span>{" "}
                   under your daily target of {user.bmr}.
@@ -119,12 +119,12 @@ export default function CalorieLogForm({ user, selectedDate, existing, foodAdd, 
             placeholder="e.g. Lunch out, high protein meal"
             value={notesInput}
             onChange={(e) => setNotesInput(e.target.value)}
-            className="w-full bg-gray-50 border border-gray-100 focus:border-[#2ECC71] focus:bg-white text-gray-900 font-medium py-3 px-4 rounded-xl transition outline-none resize-none h-20 text-sm"
+            className="w-full bg-gray-50 border border-gray-100 focus:border-[#FEC63F] focus:bg-white text-gray-900 font-medium py-3 px-4 rounded-xl transition outline-none resize-none h-20 text-sm"
           />
         </div>
 
         {successMsg && (
-          <div className="flex items-center space-x-2 text-xs text-[#2ECC71] font-bold bg-[#2ECC71]/10 px-4 py-3 rounded-xl border border-[#2ECC71]/20">
+          <div className="flex items-center space-x-2 text-xs text-[#A66A00] font-bold bg-[#FEC63F]/10 px-4 py-3 rounded-xl border border-[#FEC63F]/20">
             <Sparkles className="w-4 h-4" />
             <span>{successMsg}</span>
           </div>
@@ -140,7 +140,7 @@ export default function CalorieLogForm({ user, selectedDate, existing, foodAdd, 
         <button
           type="submit"
           disabled={saving}
-          className="w-full bg-[#111111] hover:bg-[#2ECC71] hover:text-[#111111] text-white font-extrabold text-xs py-3 rounded-xl uppercase tracking-wider transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center space-x-2 shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-[#111111] hover:bg-[#FEC63F] hover:text-[#111111] text-white font-extrabold text-xs py-3 rounded-xl uppercase tracking-wider transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center space-x-2 shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Save className="w-4 h-4" />
           <span>{saving ? "Saving…" : existing ? "Update Entry" : "Save Entry"}</span>

@@ -160,9 +160,9 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
               <Line
                 type="monotone"
                 dataKey="weight"
-                stroke="#2ECC71"
+                stroke="#FEC63F"
                 strokeWidth={3}
-                dot={{ r: 4, stroke: "#2ECC71", strokeWidth: 2, fill: "#FFFFFF" }}
+                dot={{ r: 4, stroke: "#FEC63F", strokeWidth: 2, fill: "#FFFFFF" }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>
@@ -235,12 +235,12 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                 <div
                   key={week}
                   className={`flex items-center gap-1 py-1 px-0.5 rounded-lg ${
-                    isCurrent ? "bg-[#2ECC71]/5" : ""
+                    isCurrent ? "bg-[#FEC63F]/5" : ""
                   }`}
                 >
                   <span
                     className={`w-9 shrink-0 text-[10px] font-bold font-mono ${
-                      isCurrent ? "text-[#2ECC71]" : isElapsed ? "text-gray-600" : "text-gray-300"
+                      isCurrent ? "text-[#A66A00]" : isElapsed ? "text-gray-600" : "text-gray-300"
                     }`}
                   >
                     W{week}
@@ -258,10 +258,10 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                     const dayDeficit = entry ? user.bmr - entry.calories : 0;
                     const loggedCls =
                       dayDeficit >= 500
-                        ? "bg-[#2ECC71]"
+                        ? "bg-[#FEC63F]"
                         : dayDeficit > 0
-                        ? "bg-[#2ECC71]/60"
-                        : "bg-[#2ECC71]/25";
+                        ? "bg-[#FEC63F]/60"
+                        : "bg-[#FEC63F]/25";
                     return (
                       <span
                         key={date}
@@ -287,7 +287,7 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                             ? "bg-white border-2 border-gray-200"
                             : isFuture || isPreJoin
                             ? "bg-gray-100"
-                            : "bg-amber-200"
+                            : "bg-orange-200"
                         }`}
                       />
                     );
@@ -325,7 +325,7 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                           {...tipHandlers(
                             `Personal: +${per.calories_burned} kcal${per.notes ? ` — ${per.notes}` : ""}`
                           )}
-                          className="w-3 h-3 rounded-full shrink-0 transition duration-150 hover:scale-125 bg-[#2ECC71]"
+                          className="w-3 h-3 rounded-full shrink-0 transition duration-150 hover:scale-125 bg-[#FEC63F]"
                         />
                       ) : null;
                     })()}
@@ -349,13 +349,13 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
             {/* Legend */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-2 text-[10px] text-gray-400 font-medium">
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-sm bg-[#2ECC71]" />
-                <span className="w-3 h-3 rounded-sm bg-[#2ECC71]/60" />
-                <span className="w-3 h-3 rounded-sm bg-[#2ECC71]/25" />
+                <span className="w-3 h-3 rounded-sm bg-[#FEC63F]" />
+                <span className="w-3 h-3 rounded-sm bg-[#FEC63F]/60" />
+                <span className="w-3 h-3 rounded-sm bg-[#FEC63F]/25" />
                 logged — deficit → surplus
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-sm bg-amber-200" /> missed
+                <span className="w-3 h-3 rounded-sm bg-orange-200" /> missed
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-sm bg-white border-2 border-gray-200" /> today
@@ -367,7 +367,7 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                 <span className="w-2.5 h-2.5 rounded-full bg-[#111111]" /> workout done
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#2ECC71]" /> personal workout
+                <span className="w-2.5 h-2.5 rounded-full bg-[#FEC63F]" /> personal workout
               </span>
               <span className="text-gray-300">• hover any cell for detail</span>
             </div>
@@ -394,7 +394,7 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
         {/* Client's food notes - coaching signal */}
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs lg:col-span-2 space-y-3">
           <div className="flex items-center space-x-2">
-            <StickyNote className="w-4 h-4 text-[#2ECC71]" />
+            <StickyNote className="w-4 h-4 text-[#A66A00]" />
             <h3 className="text-base font-bold text-gray-900">Recent Notes</h3>
           </div>
           {notes.length === 0 ? (
@@ -409,7 +409,7 @@ export default function CoachClientReport({ user, allCalories, allWorkouts }: Co
                     <span className="text-gray-500">{entry.date ? formatShortDate(entry.date) : "—"}</span>
                     <span className="text-gray-900 flex items-center gap-1">
                       {entry.workout ? (
-                        <Dumbbell className="w-3 h-3 text-[#2ECC71]" />
+                        <Dumbbell className="w-3 h-3 text-[#A66A00]" />
                       ) : (
                         <Flame className="w-3 h-3 text-orange-400" />
                       )}
@@ -450,7 +450,7 @@ function ReportKpi({
   return (
     <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs flex items-center space-x-3">
       <div className="bg-gray-50 p-2.5 rounded-xl shrink-0">
-        <Icon className="w-5 h-5 text-[#2ECC71]" />
+        <Icon className="w-5 h-5 text-[#A66A00]" />
       </div>
       <div className="min-w-0">
         <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{label}</p>

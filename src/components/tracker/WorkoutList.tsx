@@ -127,7 +127,7 @@ export default function WorkoutList({
             onChange={(e) => setCaloriesInput(e.target.value)}
             min="0"
             max={MAX_WORKOUT_CALORIES}
-            className="w-full bg-white border border-gray-200 focus:border-[#2ECC71] text-gray-900 font-bold font-mono text-sm py-2.5 pl-3 pr-12 rounded-xl transition outline-none"
+            className="w-full bg-white border border-gray-200 focus:border-[#FEC63F] text-gray-900 font-bold font-mono text-sm py-2.5 pl-3 pr-12 rounded-xl transition outline-none"
             required
           />
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 uppercase">
@@ -136,7 +136,7 @@ export default function WorkoutList({
         </div>
         <button
           type="submit"
-          className="bg-[#111111] hover:bg-[#2ECC71] hover:text-[#111111] text-white text-xs font-bold px-4 py-2.5 rounded-xl uppercase tracking-wider transition hover:scale-[1.03] active:scale-[0.97] flex items-center space-x-1.5 cursor-pointer"
+          className="bg-[#111111] hover:bg-[#FEC63F] hover:text-[#111111] text-white text-xs font-bold px-4 py-2.5 rounded-xl uppercase tracking-wider transition hover:scale-[1.03] active:scale-[0.97] flex items-center space-x-1.5 cursor-pointer"
         >
           <Save className="w-3.5 h-3.5" />
           <span>Done</span>
@@ -154,7 +154,7 @@ export default function WorkoutList({
           placeholder="What did you do? e.g. 5km run + core circuit"
           value={notesInput}
           onChange={(e) => setNotesInput(e.target.value)}
-          className="w-full bg-white border border-gray-200 focus:border-[#2ECC71] text-gray-900 font-medium text-sm py-2.5 px-3 rounded-xl transition outline-none resize-none h-16"
+          className="w-full bg-white border border-gray-200 focus:border-[#FEC63F] text-gray-900 font-medium text-sm py-2.5 px-3 rounded-xl transition outline-none resize-none h-16"
         />
       ) : (
         <p className="text-[10px] text-gray-400 font-medium">
@@ -179,7 +179,7 @@ export default function WorkoutList({
             onToggle ? "cursor-pointer group " : ""
           }${togglingName === name ? "opacity-50 pointer-events-none " : ""}${
             isCompleted
-              ? "bg-[#2ECC71]/10 border-[#2ECC71] text-gray-900"
+              ? "bg-[#FEC63F]/10 border-[#FEC63F] text-gray-900"
               : isPending
               ? "bg-white border-gray-300 text-gray-800"
               : onToggle
@@ -190,7 +190,7 @@ export default function WorkoutList({
           <div className="flex items-center space-x-4">
             <div className="flex-shrink-0">
               {isCompleted ? (
-                <CheckSquare className="w-6 h-6 text-[#2ECC71] animate-pop" />
+                <CheckSquare className="w-6 h-6 text-[#A66A00] animate-pop" />
               ) : (
                 <Square className="w-6 h-6 text-gray-400 group-hover:text-gray-900 transition" />
               )}
@@ -211,7 +211,7 @@ export default function WorkoutList({
               </span>
             )}
             {isCompleted && logEntry?.completed_at && (
-              <span className="text-[10px] bg-[#2ECC71] text-[#111111] px-2 py-1 rounded-md font-bold font-mono">
+              <span className="text-[10px] bg-[#FEC63F] text-[#111111] px-2 py-1 rounded-md font-bold font-mono">
                 Done {formatShortDate(logEntry.completed_at)}
               </span>
             )}
@@ -307,7 +307,7 @@ export default function WorkoutList({
               type="button"
               onClick={() => setLocation(loc)}
               className={`px-4 py-1.5 uppercase tracking-wider transition cursor-pointer ${
-                location === loc ? "bg-[#2ECC71] text-[#111111]" : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                location === loc ? "bg-[#FEC63F] text-[#111111]" : "bg-gray-50 text-gray-500 hover:bg-gray-100"
               }`}
             >
               {loc}
@@ -339,7 +339,7 @@ export default function WorkoutList({
             <div
               className={`p-5 rounded-2xl border transition-all duration-200 ${
                 personal?.completed
-                  ? "bg-[#2ECC71]/10 border-[#2ECC71]"
+                  ? "bg-[#FEC63F]/10 border-[#FEC63F]"
                   : pendingName === "Personal"
                   ? "bg-white border-gray-300"
                   : "bg-gray-50 border-gray-100"
@@ -348,7 +348,7 @@ export default function WorkoutList({
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center space-x-4 min-w-0">
                   <NotebookPen
-                    className={`w-6 h-6 flex-shrink-0 ${personal?.completed ? "text-[#2ECC71]" : "text-gray-400"}`}
+                    className={`w-6 h-6 flex-shrink-0 ${personal?.completed ? "text-[#A66A00]" : "text-gray-400"}`}
                   />
                   <div className="min-w-0">
                     <h4 className="text-base font-extrabold text-gray-900">Your Own Training</h4>
@@ -417,7 +417,7 @@ function RoutineSection({ title, items }: { title: string; items: string[] }) {
       <ul className="space-y-1">
         {items.map((item) => (
           <li key={item} className="text-gray-700 font-medium flex items-start">
-            <span className="text-[#2ECC71] font-bold mr-2">•</span>
+            <span className="text-[#A66A00] font-bold mr-2">•</span>
             <span>{item}</span>
           </li>
         ))}

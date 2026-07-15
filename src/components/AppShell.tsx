@@ -1,6 +1,6 @@
 import React from "react";
 import { Session } from "../auth";
-import { Dumbbell, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 interface AppShellProps {
   session: Session;
@@ -31,7 +31,7 @@ export default function AppShell({
       <aside className="hidden md:flex flex-col w-64 bg-[#111111] text-white border-r border-[#111111] relative z-20 shrink-0" id="aside-sidebar-desktop">
         {/* Sidebar Header Brand */}
         <div className="p-6 border-b border-gray-900 flex items-center space-x-3">
-          <Dumbbell className="w-6 h-6 text-[#2ECC71]" />
+          <img src="/brand-logo.png" alt="Behind the Pump" className="h-7 w-auto" />
           <div>
             <h2 className="text-sm font-black uppercase tracking-wider">Transformation</h2>
             <p className="text-[10px] text-gray-500 font-mono tracking-widest uppercase">12-Week Tracker</p>
@@ -44,7 +44,7 @@ export default function AppShell({
         <div className="p-4 border-t border-gray-900 bg-[#1a1a1a] flex items-center justify-between gap-2">
           <div className="min-w-0">
             <p className="text-sm font-black text-white truncate">{session.name}</p>
-            <p className="text-[10px] text-[#2ECC71] font-bold uppercase tracking-widest">
+            <p className="text-[10px] text-[#FEC63F] font-bold uppercase tracking-widest">
               {session.role === "coach" ? "Coach" : "Client"}
             </p>
           </div>
@@ -64,8 +64,8 @@ export default function AppShell({
       <header className="md:hidden bg-[#111111] text-white flex flex-col px-4 py-3 border-b border-gray-900 z-10 shrink-0" id="mobile-navigation-bar">
         <div className="flex justify-between items-center gap-2">
           <div className="flex items-center space-x-2 min-w-0">
-            <Dumbbell className="w-5 h-5 text-[#2ECC71] shrink-0" />
-            <span className="font-black text-xs uppercase tracking-widest text-[#2ECC71] truncate">12-Week Tracker</span>
+            <img src="/brand-logo.png" alt="Behind the Pump" className="h-6 w-auto shrink-0" />
+            <span className="font-black text-xs uppercase tracking-widest text-[#FEC63F] truncate">12-Week Tracker</span>
           </div>
 
           <div className="flex items-center space-x-2 min-w-0">

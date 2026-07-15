@@ -174,7 +174,7 @@ export default function CoachView({ session, onLogout }: CoachViewProps) {
         <ArrowLeft className="w-3.5 h-3.5" />
         <span>All Clients</span>
       </button>
-      <span className="text-[#2ECC71] font-black truncate">{viewingClient.user.name}</span>
+      <span className="text-[#FEC63F] font-black truncate">{viewingClient.user.name}</span>
     </div>
   ) : undefined;
 
@@ -194,7 +194,7 @@ export default function CoachView({ session, onLogout }: CoachViewProps) {
 
       {viewingLoading ? (
         <div className="flex items-center justify-center py-24">
-          <Loader2 className="w-8 h-8 text-[#2ECC71] animate-spin" />
+          <Loader2 className="w-8 h-8 text-[#A66A00] animate-spin" />
         </div>
       ) : viewingClient ? (
         <div className="space-y-4">

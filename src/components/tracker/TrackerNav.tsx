@@ -28,7 +28,7 @@ export function TrackerNav({ activeTab, onSelect }: TrackerNavProps) {
             onClick={() => onSelect(tab.id)}
             className={`w-full flex items-center space-x-3 font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl transition cursor-pointer ${
               isSelected
-                ? "bg-[#2ECC71] text-[#111111] font-extrabold shadow-sm"
+                ? "bg-[#FEC63F] text-[#111111] font-extrabold shadow-sm"
                 : "text-gray-400 hover:text-white hover:bg-gray-900"
             }`}
           >
@@ -53,7 +53,7 @@ export function TrackerBottomNav({ activeTab, onSelect }: TrackerNavProps) {
             key={tab.id}
             onClick={() => onSelect(tab.id)}
             className={`flex flex-col items-center justify-center py-1 flex-1 text-center font-bold tracking-wider cursor-pointer ${
-              isSelected ? "text-[#2ECC71]" : "text-gray-500"
+              isSelected ? "text-[#FEC63F]" : "text-gray-500"
             }`}
           >
             <IconComp className="w-5 h-5" />

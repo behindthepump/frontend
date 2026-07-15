@@ -64,7 +64,7 @@ export default function Progress({ user, calculations }: ProgressProps) {
     if (active && payload && payload.length) {
       return (
         <div className="bg-[#111111] text-white p-4 rounded-xl border border-gray-800 shadow-lg text-xs font-sans">
-          <p className="font-extrabold text-[#2ECC71] mb-1.5">{label}</p>
+          <p className="font-extrabold text-[#A66A00] mb-1.5">{label}</p>
           <p className="font-mono text-gray-300">
             Est. Weight: <span className="font-bold text-white">{payload[0].value} kg</span>
           </p>
@@ -110,7 +110,7 @@ export default function Progress({ user, calculations }: ProgressProps) {
       {/* Grid of overall milestones */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" id="progress-milestones">
         <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex items-center space-x-4">
-          <div className="bg-[#2ECC71]/10 p-3 rounded-xl text-[#2ECC71]">
+          <div className="bg-[#FEC63F]/10 p-3 rounded-xl text-[#A66A00]">
             <Flame className="w-6 h-6" />
           </div>
           <div>
@@ -134,14 +134,14 @@ export default function Progress({ user, calculations }: ProgressProps) {
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex items-center space-x-4">
-          <div className="bg-[#111111] p-3 rounded-xl text-[#2ECC71]">
+          <div className="bg-[#111111] p-3 rounded-xl text-[#FEC63F]">
             <TrendingDown className="w-6 h-6" />
           </div>
           <div>
             <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
               {projectedKg !== null ? "Projected by Week 12" : "Est. Weight Lost"}
             </p>
-            <h4 className="text-2xl font-black font-mono mt-1 text-[#2ECC71]">
+            <h4 className="text-2xl font-black font-mono mt-1 text-[#FEC63F]">
               {projectedKg !== null ? (
                 <>
                   −{projectedKg} <span className="text-xs font-normal text-gray-500">of {goalKg} kg goal</span>
@@ -215,9 +215,9 @@ export default function Progress({ user, calculations }: ProgressProps) {
                   name="Estimated Weight (kg)"
                   type="monotone"
                   dataKey="estimated_weight"
-                  stroke="#2ECC71"
+                  stroke="#FEC63F"
                   strokeWidth={3}
-                  dot={{ r: 5, stroke: "#2ECC71", strokeWidth: 2, fill: "#FFFFFF" }}
+                  dot={{ r: 5, stroke: "#FEC63F", strokeWidth: 2, fill: "#FFFFFF" }}
                   activeDot={{ r: 8 }}
                 />
               </LineChart>
@@ -263,11 +263,11 @@ export default function Progress({ user, calculations }: ProgressProps) {
                     Week {summary.week}
                   </span>
                   {summary.week === elapsedWeekNum && programStatus === "active" ? (
-                    <span className="text-[10px] text-amber-800 font-extrabold bg-amber-100 px-2 py-0.5 rounded uppercase">
+                    <span className="text-[10px] text-orange-800 font-extrabold bg-orange-100 px-2 py-0.5 rounded uppercase">
                       In Progress
                     </span>
                   ) : (
-                    <span className="text-[10px] text-emerald-800 font-extrabold bg-[#2ECC71]/15 px-2 py-0.5 rounded uppercase">
+                    <span className="text-[10px] text-[#A66A00] font-extrabold bg-[#FEC63F]/15 px-2 py-0.5 rounded uppercase">
                       Done
                     </span>
                   )}
@@ -284,7 +284,7 @@ export default function Progress({ user, calculations }: ProgressProps) {
                   </div>
                   <div className="flex justify-between pt-2 border-t border-gray-50 font-sans font-bold">
                     <span className="text-gray-500">Est. Weight Loss:</span>
-                    <span className="text-[#2ECC71] font-mono">{summary.weight_lost} kg</span>
+                    <span className="text-[#A66A00] font-mono">{summary.weight_lost} kg</span>
                   </div>
                 </div>
               </div>

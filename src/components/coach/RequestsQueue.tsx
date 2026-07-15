@@ -144,7 +144,7 @@ export default function RequestsQueue({
           </span>
           <span
             className={`text-[10px] font-bold font-mono px-2 py-1 rounded-md shrink-0 ${
-              aggressive ? "bg-amber-100 text-amber-800" : "bg-[#2ECC71]/10 text-emerald-700"
+              aggressive ? "bg-orange-100 text-orange-800" : "bg-[#FEC63F]/10 text-[#A66A00]"
             }`}
             title={`Losing ${toLose} kg in ${PROGRAM_WEEKS} weeks means ~${weeklyPace} kg per week${
               aggressive ? " - an aggressive pace" : ""
@@ -203,7 +203,7 @@ export default function RequestsQueue({
                 type="date"
                 value={approveDate}
                 onChange={(e) => setApproveDate(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 focus:border-[#2ECC71] text-gray-900 px-3 py-2 rounded-xl transition outline-none font-mono"
+                className="w-full bg-gray-50 border border-gray-200 focus:border-[#FEC63F] text-gray-900 px-3 py-2 rounded-xl transition outline-none font-mono"
                 required
               />
               <p className="text-[10px] text-gray-400 mt-1 font-medium normal-case">
@@ -214,7 +214,7 @@ export default function RequestsQueue({
             <div className="flex space-x-2">
               <button
                 type="submit"
-                className="flex-1 bg-[#2ECC71] hover:bg-[#27ae60] text-[#111111] py-2 rounded-xl uppercase tracking-wider transition hover:scale-[1.02] active:scale-[0.97] flex items-center justify-center space-x-1.5 cursor-pointer"
+                className="flex-1 bg-[#FEC63F] hover:bg-[#F0B41E] text-[#111111] py-2 rounded-xl uppercase tracking-wider transition hover:scale-[1.02] active:scale-[0.97] flex items-center justify-center space-x-1.5 cursor-pointer"
               >
                 <CalendarCheck className="w-3.5 h-3.5" />
                 <span>Start Program</span>
@@ -235,7 +235,7 @@ export default function RequestsQueue({
             <button
               type="button"
               onClick={() => openApprove(request.id)}
-              className="flex-1 bg-[#111111] hover:bg-[#2ECC71] hover:text-[#111111] text-white py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition hover:scale-[1.02] active:scale-[0.97] flex items-center justify-center space-x-1.5 cursor-pointer"
+              className="flex-1 bg-[#111111] hover:bg-[#FEC63F] hover:text-[#111111] text-white py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition hover:scale-[1.02] active:scale-[0.97] flex items-center justify-center space-x-1.5 cursor-pointer"
             >
               <Check className="w-3.5 h-3.5" />
               <span>Approve</span>
@@ -287,8 +287,8 @@ export default function RequestsQueue({
       {pending.length === 0 && (
         <div className={declined.length === 0 ? "min-h-[50vh] flex items-center" : undefined}>
           <div className="bg-white p-10 rounded-2xl border border-gray-100 text-center space-y-3 w-full">
-            <div className="w-14 h-14 mx-auto rounded-full bg-[#2ECC71]/10 flex items-center justify-center">
-              <CheckCircle2 className="w-7 h-7 text-[#2ECC71] animate-pop" />
+            <div className="w-14 h-14 mx-auto rounded-full bg-[#FEC63F]/10 flex items-center justify-center">
+              <CheckCircle2 className="w-7 h-7 text-[#A66A00] animate-pop" />
             </div>
             <p className="text-sm font-extrabold text-gray-900">All caught up</p>
             <p className="text-xs text-gray-400">

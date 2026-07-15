@@ -5,7 +5,7 @@ import { Session, sessionFromFirebaseUser, logout, authErrorMessage } from "./au
 import { loadAppData, saveCaloriesEntry, saveWorkoutLog } from "./store";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { Dumbbell, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import Login from "./components/Login";
 import Onboarding from "./components/Onboarding";
 import Waitlist from "./components/Waitlist";
@@ -251,7 +251,7 @@ export default function App() {
 
   const splash = (
     <div className="min-h-screen bg-[#111111] flex flex-col items-center justify-center space-y-4">
-      <Dumbbell className="w-10 h-10 text-[#2ECC71] animate-pulse" />
+      <img src="/brand-logo.png" alt="Behind the Pump" className="h-14 w-auto mx-auto animate-pulse" />
       {splashSlow && (
         <div className="text-center space-y-3">
           <p className="text-xs text-gray-500">Taking longer than expected…</p>
@@ -310,7 +310,7 @@ export default function App() {
           <div className="flex justify-center space-x-2">
             <button
               onClick={() => setReloadTick((t) => t + 1)}
-              className="bg-[#2ECC71] text-[#111111] text-xs font-bold px-5 py-2.5 rounded-xl uppercase tracking-wider cursor-pointer"
+              className="bg-[#FEC63F] text-[#111111] text-xs font-bold px-5 py-2.5 rounded-xl uppercase tracking-wider cursor-pointer"
             >
               Try Again
             </button>

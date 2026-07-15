@@ -27,7 +27,7 @@ export default function PaceTrack({ goalKg, lost, week, dark = false }: PaceTrac
               }`}
             >
               <span
-                className="block h-full bg-[#2ECC71] transition-all duration-500"
+                className="block h-full bg-[#FEC63F] transition-all duration-500"
                 style={{ width: `${fill * 100}%` }}
               />
             </span>
@@ -60,13 +60,13 @@ export function paceDelta(
   if (delta < -0.2) {
     return {
       label: `${Math.abs(delta)} kg behind`,
-      cls: "bg-amber-100 text-amber-800",
-      clsDark: "bg-amber-500/20 text-amber-300"
+      cls: "bg-orange-100 text-orange-800",
+      clsDark: "bg-orange-500/20 text-orange-300"
     };
   }
   return {
     label: delta > 0.2 ? `${delta} kg ahead` : "on pace",
-    cls: "bg-[#2ECC71]/10 text-emerald-700",
-    clsDark: "bg-[#2ECC71]/20 text-[#2ECC71]"
+    cls: "bg-[#FEC63F]/10 text-[#A66A00]",
+    clsDark: "bg-[#FEC63F]/20 text-[#FEC63F]"
   };
 }

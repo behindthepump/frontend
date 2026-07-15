@@ -50,7 +50,7 @@ export default function FoodReference({ onAddFood }: FoodReferenceProps) {
         className="w-full p-6 flex justify-between items-center cursor-pointer"
       >
         <div className="flex items-center space-x-3 text-left">
-          <BookOpen className="w-5 h-5 text-[#2ECC71] shrink-0" />
+          <BookOpen className="w-5 h-5 text-[#A66A00] shrink-0" />
           <div>
             <h3 className="text-base font-extrabold text-gray-900">Food Calorie Reference</h3>
             <p className="text-xs text-gray-400 font-medium">
@@ -67,7 +67,7 @@ export default function FoodReference({ onAddFood }: FoodReferenceProps) {
         <div className="px-6 pb-6 space-y-4">
           {!data && !loadError && (
             <div className="flex justify-center py-8">
-              <Loader2 className="w-6 h-6 text-[#2ECC71] animate-spin" />
+              <Loader2 className="w-6 h-6 text-[#A66A00] animate-spin" />
             </div>
           )}
 
@@ -77,7 +77,7 @@ export default function FoodReference({ onAddFood }: FoodReferenceProps) {
               <button
                 type="button"
                 onClick={load}
-                className="bg-[#111111] hover:bg-[#2ECC71] hover:text-[#111111] text-white text-xs font-bold px-5 py-2.5 rounded-xl uppercase tracking-wider transition cursor-pointer"
+                className="bg-[#111111] hover:bg-[#FEC63F] hover:text-[#111111] text-white text-xs font-bold px-5 py-2.5 rounded-xl uppercase tracking-wider transition cursor-pointer"
               >
                 Try Again
               </button>
@@ -93,7 +93,7 @@ export default function FoodReference({ onAddFood }: FoodReferenceProps) {
               placeholder="Search foods, e.g. nasi lemak…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-100 focus:border-[#2ECC71] focus:bg-white text-gray-900 font-bold text-sm pl-10 pr-4 py-2.5 rounded-xl transition outline-none"
+              className="w-full bg-gray-50 border border-gray-100 focus:border-[#FEC63F] focus:bg-white text-gray-900 font-bold text-sm pl-10 pr-4 py-2.5 rounded-xl transition outline-none"
             />
           </div>
 
@@ -125,7 +125,7 @@ export default function FoodReference({ onAddFood }: FoodReferenceProps) {
                           onClick={() => onAddFood(item.calories)}
                           title={`Add ${item.calories} kcal to today's count`}
                           aria-label={`Add ${item.name} (${item.calories} kcal) to today's count`}
-                          className="p-1 rounded-md bg-[#2ECC71]/10 text-[#2ECC71] hover:bg-[#2ECC71] hover:text-[#111111] transition hover:scale-110 active:scale-90 cursor-pointer"
+                          className="p-1 rounded-md bg-[#FEC63F]/10 text-[#A66A00] hover:bg-[#FEC63F] hover:text-[#111111] transition hover:scale-110 active:scale-90 cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -137,8 +137,8 @@ export default function FoodReference({ onAddFood }: FoodReferenceProps) {
             ))}
           </div>
 
-          <div className="bg-amber-50 rounded-xl p-4 text-xs text-amber-800 border border-amber-100 flex items-start space-x-2">
-            <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div className="bg-gray-50 rounded-xl p-4 text-xs text-gray-500 border border-gray-100 flex items-start space-x-2">
+            <Info className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
             <p className="leading-relaxed">{data.disclaimer}</p>
           </div>
             </>

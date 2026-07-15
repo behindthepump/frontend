@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { login, loginWithGoogle, requestPasswordReset, authErrorMessage, Session } from "../auth";
 import Expand from "./Expand";
-import { Dumbbell, LogIn, AlertCircle, MailCheck, ChevronDown } from "lucide-react";
+import { LogIn, AlertCircle, MailCheck, ChevronDown } from "lucide-react";
 
 interface LoginProps {
   onLogin: (session: Session) => void;
@@ -67,7 +67,7 @@ export default function Login({ onLogin, notice: initialNotice }: LoginProps) {
       <div className="w-full max-w-sm space-y-6 animate-fadeIn">
         {/* Brand */}
         <div className="text-center space-y-2">
-          <Dumbbell className="w-10 h-10 text-[#2ECC71] mx-auto" />
+          <img src="/brand-logo.png" alt="Behind the Pump" className="h-14 w-auto mx-auto" />
           <h1 className="text-lg font-black uppercase tracking-wider text-white">Transformation</h1>
           <p className="text-[10px] text-gray-500 font-mono tracking-widest uppercase">12-Week Tracker</p>
         </div>
@@ -106,7 +106,7 @@ export default function Login({ onLogin, notice: initialNotice }: LoginProps) {
           )}
 
           {notice && (
-            <div className="flex items-center space-x-2 text-xs text-[#2ECC71] font-bold bg-[#2ECC71]/10 px-4 py-3 rounded-xl border border-[#2ECC71]/20">
+            <div className="flex items-center space-x-2 text-xs text-[#FEC63F] font-bold bg-[#FEC63F]/10 px-4 py-3 rounded-xl border border-[#FEC63F]/20">
               <MailCheck className="w-4 h-4 shrink-0" />
               <span>{notice}</span>
             </div>
@@ -143,7 +143,7 @@ export default function Login({ onLogin, notice: initialNotice }: LoginProps) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               autoComplete="email"
-              className="w-full bg-[#111111] border border-gray-800 focus:border-[#2ECC71] text-white font-bold px-4 py-3 rounded-xl transition outline-none text-sm"
+              className="w-full bg-[#111111] border border-gray-800 focus:border-[#FEC63F] text-white font-bold px-4 py-3 rounded-xl transition outline-none text-sm"
               required
             />
           </div>
@@ -158,7 +158,7 @@ export default function Login({ onLogin, notice: initialNotice }: LoginProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
-              className="w-full bg-[#111111] border border-gray-800 focus:border-[#2ECC71] text-white font-bold px-4 py-3 rounded-xl transition outline-none text-sm"
+              className="w-full bg-[#111111] border border-gray-800 focus:border-[#FEC63F] text-white font-bold px-4 py-3 rounded-xl transition outline-none text-sm"
               required
             />
           </div>
@@ -166,7 +166,7 @@ export default function Login({ onLogin, notice: initialNotice }: LoginProps) {
           <button
             type="submit"
             disabled={busy}
-            className="w-full bg-[#2ECC71] hover:bg-[#27ae60] text-[#111111] font-extrabold text-xs py-3 rounded-xl uppercase tracking-wider transition flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#FEC63F] hover:bg-[#F0B41E] text-[#111111] font-extrabold text-xs py-3 rounded-xl uppercase tracking-wider transition flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <LogIn className="w-4 h-4" />
             <span>{busy ? "Signing in…" : "Sign In"}</span>
@@ -176,7 +176,7 @@ export default function Login({ onLogin, notice: initialNotice }: LoginProps) {
             type="button"
             onClick={handleForgotPassword}
             disabled={busy}
-            className="w-full text-[11px] text-gray-500 hover:text-[#2ECC71] font-bold transition cursor-pointer disabled:opacity-50"
+            className="w-full text-[11px] text-gray-500 hover:text-[#FEC63F] font-bold transition cursor-pointer disabled:opacity-50"
           >
             Forgot password?
           </button>

@@ -127,7 +127,7 @@ export default function CoachClientScreens({
                   onClick={() => setTab(id)}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition cursor-pointer ${
                     tab === id
-                      ? "bg-[#2ECC71] text-[#111111]"
+                      ? "bg-[#FEC63F] text-[#111111]"
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
@@ -164,7 +164,7 @@ export default function CoachClientScreens({
                   {pace.label}
                 </span>
               )}
-              <span className="text-[#2ECC71] font-mono font-bold text-sm">
+              <span className="text-[#FEC63F] font-mono font-bold text-sm">
                 <CountUp value={goalPct} />%
               </span>
             </div>

@@ -54,7 +54,7 @@ export default function WeeklyDeficitSummary({
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
           Estimated loss this week
         </p>
-        <p className="text-3xl leading-none font-black font-mono text-[#2ECC71] mt-1.5">
+        <p className="text-3xl leading-none font-black font-mono text-[#A66A00] mt-1.5">
           ≈ {estKgLost} <span className="text-sm text-gray-400 font-bold">kg</span>
         </p>
         {totalWeeklyDeficit < 0 && (
@@ -84,13 +84,13 @@ export default function WeeklyDeficitSummary({
 
         <div
           className={`flex justify-between items-center p-3 rounded-xl border ${
-            totalWeeklyDeficit >= 0 ? "bg-green-50/50 border-green-100" : "bg-orange-50 border-orange-100"
+            totalWeeklyDeficit >= 0 ? "bg-[#FEC63F]/10 border-[#FEC63F]/30" : "bg-orange-50 border-orange-100"
           }`}
         >
           <span className="text-xs font-bold text-gray-500 uppercase">Weekly Deficit</span>
           <span
             className={`font-mono text-sm font-extrabold ${
-              totalWeeklyDeficit >= 0 ? "text-[#2ECC71]" : "text-orange-500"
+              totalWeeklyDeficit >= 0 ? "text-[#A66A00]" : "text-orange-500"
             }`}
           >
             {totalWeeklyDeficit.toLocaleString()} <span className="text-xs font-normal">kcal</span>

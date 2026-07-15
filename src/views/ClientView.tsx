@@ -4,7 +4,6 @@ import { Session } from "../auth";
 import AppShell from "../components/AppShell";
 import { TrackerNav, TrackerBottomNav } from "../components/tracker/TrackerNav";
 import ClientTrackerScreens from "../components/client/ClientTrackerScreens";
-import { Dumbbell } from "lucide-react";
 
 interface ClientViewProps {
   session: Session;
@@ -46,7 +45,7 @@ export default function ClientView({
     return (
       <div className="min-h-screen bg-[#F7F7F7] flex items-center justify-center font-sans">
         <div className="text-center space-y-4">
-          <Dumbbell className="w-10 h-10 text-[#2ECC71] mx-auto" />
+          <img src="/brand-logo.png" alt="Behind the Pump" className="h-14 w-auto mx-auto" />
           <p className="text-sm font-bold text-gray-600">
             Your account isn't active right now. Check with your coach — they can get you set up again.
           </p>

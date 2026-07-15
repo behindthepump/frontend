@@ -20,14 +20,14 @@ export default function RingAvatar({ name, pct }: { name: string; pct: number })
           cy="24"
           r={R}
           fill="none"
-          stroke="#2ECC71"
+          stroke="#FEC63F"
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeDasharray={`${pct * C} ${C}`}
           className="transition-all duration-700"
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-[13px] font-black font-mono text-[#2ECC71]">
+      <span className="absolute inset-0 flex items-center justify-center text-[13px] font-black font-mono text-[#FEC63F]">
         {initials}
       </span>
     </div>

@@ -70,7 +70,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
         {canEdit && !isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="bg-[#111111] hover:bg-[#2ECC71] hover:text-[#111111] text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center space-x-2 cursor-pointer shadow-2xs"
+            className="bg-[#111111] hover:bg-[#FEC63F] hover:text-[#111111] text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center space-x-2 cursor-pointer shadow-2xs"
           >
             <Edit3 className="w-4 h-4" />
             <span>Edit Metrics</span>
@@ -84,7 +84,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
       </div>
 
       {message && (
-        <div className="p-4 bg-[#2ECC71]/15 text-[#2ECC71] border border-[#2ECC71]/20 font-bold rounded-xl text-xs">
+        <div className="p-4 bg-[#FEC63F]/15 text-[#A66A00] border border-[#FEC63F]/20 font-bold rounded-xl text-xs">
           {message}
         </div>
       )}
@@ -110,7 +110,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-100 focus:border-[#2ECC71] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm"
+                  className="w-full bg-gray-50 border border-gray-100 focus:border-[#FEC63F] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm"
                   required
                 />
               </div>
@@ -122,7 +122,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
                     type="number"
                     value={age}
                     onChange={(e) => setAge(Number(e.target.value))}
-                    className="w-full bg-gray-50 border border-gray-100 focus:border-[#2ECC71] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm font-mono"
+                    className="w-full bg-gray-50 border border-gray-100 focus:border-[#FEC63F] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm font-mono"
                     min="1"
                     max="120"
                     required
@@ -133,7 +133,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-100 focus:border-[#2ECC71] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm"
+                    className="w-full bg-gray-50 border border-gray-100 focus:border-[#FEC63F] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm"
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -151,7 +151,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
                   max="250"
                   value={height}
                   onChange={(e) => setHeight(Number(e.target.value))}
-                  className="w-full bg-gray-50 border border-gray-100 focus:border-[#2ECC71] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm font-mono"
+                  className="w-full bg-gray-50 border border-gray-100 focus:border-[#FEC63F] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm font-mono"
                   required
                 />
               </div>
@@ -172,7 +172,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
                     min="1"
                     value={startingWeight}
                     onChange={(e) => setStartingWeight(Number(e.target.value))}
-                    className="w-full bg-gray-50 border border-gray-100 focus:border-[#2ECC71] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm font-mono"
+                    className="w-full bg-gray-50 border border-gray-100 focus:border-[#FEC63F] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm font-mono"
                     required
                   />
                 </div>
@@ -184,7 +184,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
                     min="1"
                     value={targetWeight}
                     onChange={(e) => setTargetWeight(Number(e.target.value))}
-                    className="w-full bg-gray-50 border border-gray-100 focus:border-[#2ECC71] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm font-mono"
+                    className="w-full bg-gray-50 border border-gray-100 focus:border-[#FEC63F] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm font-mono"
                     required
                   />
                 </div>
@@ -197,7 +197,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
                   min="1"
                   value={bmr}
                   onChange={(e) => setBmr(Number(e.target.value))}
-                  className="w-full bg-gray-50 border border-gray-100 focus:border-[#2ECC71] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm font-mono"
+                  className="w-full bg-gray-50 border border-gray-100 focus:border-[#FEC63F] focus:bg-white text-gray-900 font-bold px-4 py-2.5 rounded-xl transition outline-none text-sm font-mono"
                   required
                 />
               </div>
@@ -218,7 +218,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
             </button>
             <button
               type="submit"
-              className="bg-[#2ECC71] hover:bg-[#27ae60] text-[#111111] font-bold text-xs px-5 py-2.5 rounded-xl tracking-wider uppercase transition cursor-pointer"
+              className="bg-[#FEC63F] hover:bg-[#F0B41E] text-[#111111] font-bold text-xs px-5 py-2.5 rounded-xl tracking-wider uppercase transition cursor-pointer"
             >
               Save Profile
             </button>
@@ -264,7 +264,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
           {/* Fitness baseline card */}
           <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs space-y-6">
             <div className="flex items-center space-x-3 border-b border-gray-50 pb-3">
-              <Scale className="w-5 h-5 text-[#2ECC71]" />
+              <Scale className="w-5 h-5 text-[#A66A00]" />
               <h3 className="text-base font-extrabold text-[#111111]">Program Baseline</h3>
             </div>
 
@@ -280,7 +280,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
                     <span className="text-xs font-bold text-gray-400 ml-1">kg</span>
                   </p>
                 </div>
-                <span className="text-[10px] font-bold font-mono bg-[#2ECC71]/10 text-emerald-700 px-2 py-1 rounded-md shrink-0">
+                <span className="text-[10px] font-bold font-mono bg-[#FEC63F]/10 text-[#A66A00] px-2 py-1 rounded-md shrink-0">
                   −{parseFloat((user.starting_weight - user.target_weight).toFixed(1))} kg
                 </span>
               </div>
@@ -306,7 +306,7 @@ export default function Profile({ user, canEdit, goalProgress = 0, onUpdateUser,
                 </p>
               </div>
 
-              <div className="bg-[#2ECC71]/10 p-3 rounded-xl border border-[#2ECC71]/10 sm:col-span-2 flex justify-between items-center">
+              <div className="bg-[#FEC63F]/10 p-3 rounded-xl border border-[#FEC63F]/10 sm:col-span-2 flex justify-between items-center">
                 <div>
                   <p className="text-[10px] font-bold text-gray-500 uppercase font-sans tracking-wide flex items-center space-x-1">
                     <Heart className="w-3.5 h-3.5 text-red-500" />

@@ -4,7 +4,7 @@ import { clientMetricsError, PROGRAM_WEEKS } from "../data";
 import { submitOnboarding } from "../store";
 import { auth } from "../firebase";
 import Expand from "./Expand";
-import { Dumbbell, ClipboardList, AlertCircle, Flame, TrendingDown, ChevronRight, ChevronDown } from "lucide-react";
+import { ClipboardList, AlertCircle, Flame, TrendingDown, ChevronRight, ChevronDown } from "lucide-react";
 
 interface OnboardingProps {
   onDone: (name: string) => void; // parent flips the session to "pending"
@@ -101,14 +101,14 @@ export default function Onboarding({ onDone, onLogout }: OnboardingProps) {
   };
 
   const inputClass =
-    "w-full bg-[#111111] border border-gray-800 focus:border-[#2ECC71] text-white font-bold px-4 py-3 rounded-xl transition outline-none text-sm";
+    "w-full bg-[#111111] border border-gray-800 focus:border-[#FEC63F] text-white font-bold px-4 py-3 rounded-xl transition outline-none text-sm";
   const labelClass = "block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2";
 
   return (
     <div className="min-h-screen bg-[#111111] flex items-center justify-center font-sans p-4" id="onboarding-screen">
       <div className="w-full max-w-sm space-y-6 animate-fadeIn">
         <div className="text-center space-y-2">
-          <Dumbbell className="w-10 h-10 text-[#2ECC71] mx-auto" />
+          <img src="/brand-logo.png" alt="Behind the Pump" className="h-14 w-auto mx-auto" />
           <p className="text-[10px] text-gray-500 font-mono tracking-widest uppercase">
             Transformation • 12-Week Tracker
           </p>
@@ -116,7 +116,7 @@ export default function Onboarding({ onDone, onLogout }: OnboardingProps) {
 
           {/* Where am I in the journey? */}
           <div className="flex items-center justify-center gap-1.5 text-[9px] font-bold uppercase tracking-wider pt-1">
-            <span className="text-[#2ECC71]">1 · Your details</span>
+            <span className="text-[#FEC63F]">1 · Your details</span>
             <ChevronRight className="w-3 h-3 text-gray-700" />
             <span className="text-gray-600">2 · Coach review</span>
             <ChevronRight className="w-3 h-3 text-gray-700" />
@@ -246,10 +246,10 @@ export default function Onboarding({ onDone, onLogout }: OnboardingProps) {
               )}
               {weeklyPace !== null && (
                 <p className="flex items-center gap-2 text-gray-400">
-                  <TrendingDown className="w-3.5 h-3.5 text-[#2ECC71] shrink-0" />
+                  <TrendingDown className="w-3.5 h-3.5 text-[#FEC63F] shrink-0" />
                   <span>
                     −{toLose} kg in {PROGRAM_WEEKS} weeks ≈{" "}
-                    <span className={`font-mono font-bold ${aggressive ? "text-amber-300" : "text-white"}`}>
+                    <span className={`font-mono font-bold ${aggressive ? "text-orange-300" : "text-white"}`}>
                       {weeklyPace} kg/week
                     </span>
                     {aggressive && " — ambitious; your coach may adjust it"}
@@ -264,7 +264,7 @@ export default function Onboarding({ onDone, onLogout }: OnboardingProps) {
           <button
             type="submit"
             disabled={busy}
-            className="w-full bg-[#2ECC71] hover:bg-[#27ae60] text-[#111111] font-extrabold text-xs py-3 rounded-xl uppercase tracking-wider transition hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#FEC63F] hover:bg-[#F0B41E] text-[#111111] font-extrabold text-xs py-3 rounded-xl uppercase tracking-wider transition hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ClipboardList className="w-4 h-4" />
             <span>{busy ? "Submitting…" : "Request to Join"}</span>

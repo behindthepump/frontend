@@ -68,7 +68,7 @@ export default function ClientsRoster({
             placeholder="Search by first or last name…"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full bg-white border border-gray-200 focus:border-[#2ECC71] text-gray-900 font-bold text-sm pl-10 pr-9 py-2.5 rounded-xl transition outline-none"
+            className="w-full bg-white border border-gray-200 focus:border-[#FEC63F] text-gray-900 font-bold text-sm pl-10 pr-9 py-2.5 rounded-xl transition outline-none"
           />
           <kbd className="hidden sm:block absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold text-gray-300 border border-gray-200 rounded px-1.5 py-0.5 pointer-events-none">
             /
@@ -134,7 +134,7 @@ export default function ClientsRoster({
               type="button"
               key={client.id}
               onClick={() => onSelectClient(client.id)}
-              className={`group relative text-left w-full bg-white p-5 rounded-2xl border border-gray-100 border-l-4 ${RECENCY_EDGE[rec.key]} transition duration-200 shadow-3xs hover:shadow-sm hover:-translate-y-0.5 space-y-4 animate-fadeIn cursor-pointer focus-visible:outline-2 focus-visible:outline-[#2ECC71]`}
+              className={`group relative text-left w-full bg-white p-5 rounded-2xl border border-gray-100 border-l-4 ${RECENCY_EDGE[rec.key]} transition duration-200 shadow-3xs hover:shadow-sm hover:-translate-y-0.5 space-y-4 animate-fadeIn cursor-pointer focus-visible:outline-2 focus-visible:outline-[#FEC63F]`}
               style={{ animationDelay: `${Math.min(index, 7) * 45}ms`, animationFillMode: "backwards" }}
             >
               {/* Identity row: ring = goal progress, chip = recency */}
@@ -203,7 +203,7 @@ export default function ClientsRoster({
                     />
                   </>
                 )}
-                <ArrowRight className="w-4 h-4 text-gray-300 ml-auto transition duration-200 group-hover:translate-x-1 group-hover:text-[#2ECC71]" />
+                <ArrowRight className="w-4 h-4 text-gray-300 ml-auto transition duration-200 group-hover:translate-x-1 group-hover:text-[#A66A00]" />
               </div>
             </button>
           );
@@ -212,7 +212,7 @@ export default function ClientsRoster({
 
       {rosterLoading && clients.length > 0 && (
         <div className="flex justify-center py-6">
-          <Loader2 className="w-6 h-6 text-[#2ECC71] animate-spin" />
+          <Loader2 className="w-6 h-6 text-[#A66A00] animate-spin" />
         </div>
       )}
 

@@ -29,7 +29,7 @@ export function CoachNav({ page, pendingCount, onSelect }: CoachNavProps) {
             onClick={() => onSelect(id)}
             className={`w-full flex items-center space-x-3 font-semibold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl transition cursor-pointer ${
               isSelected
-                ? "bg-[#2ECC71] text-[#111111] font-extrabold shadow-sm"
+                ? "bg-[#FEC63F] text-[#111111] font-extrabold shadow-sm"
                 : "text-gray-400 hover:text-white hover:bg-gray-900"
             }`}
           >
@@ -40,7 +40,7 @@ export function CoachNav({ page, pendingCount, onSelect }: CoachNavProps) {
                 // Re-keyed by count so it pops again whenever it changes
                 key={pendingCount}
                 className={`ml-auto text-[10px] font-black font-mono rounded-full min-w-5 h-5 px-1.5 flex items-center justify-center animate-pop ${
-                  isSelected ? "bg-[#111111] text-[#2ECC71]" : "bg-[#2ECC71] text-[#111111]"
+                  isSelected ? "bg-[#111111] text-[#FEC63F]" : "bg-[#FEC63F] text-[#111111]"
                 }`}
               >
                 {pendingCount}
@@ -65,7 +65,7 @@ export function CoachBottomNav({ page, pendingCount, onSelect }: CoachNavProps) 
             key={id}
             onClick={() => onSelect(id)}
             className={`flex flex-col items-center justify-center py-1 flex-1 text-center font-bold tracking-wider cursor-pointer ${
-              isSelected ? "text-[#2ECC71]" : "text-gray-500"
+              isSelected ? "text-[#FEC63F]" : "text-gray-500"
             }`}
           >
             <span className="relative">
@@ -73,7 +73,7 @@ export function CoachBottomNav({ page, pendingCount, onSelect }: CoachNavProps) 
               {badge && (
                 <span
                   key={pendingCount}
-                  className="absolute -top-1.5 -right-2.5 bg-[#2ECC71] text-[#111111] text-[8px] font-black font-mono rounded-full min-w-3.5 h-3.5 px-1 flex items-center justify-center animate-pop"
+                  className="absolute -top-1.5 -right-2.5 bg-[#FEC63F] text-[#111111] text-[8px] font-black font-mono rounded-full min-w-3.5 h-3.5 px-1 flex items-center justify-center animate-pop"
                 >
                   {pendingCount}
                 </span>

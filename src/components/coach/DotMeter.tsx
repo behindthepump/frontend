@@ -24,7 +24,7 @@ export default function DotMeter({
           className={`w-1.5 h-1.5 rounded-full ${
             i < filled
               ? dark
-                ? "bg-[#2ECC71]"
+                ? "bg-[#FEC63F]"
                 : "bg-[#111111]"
               : dark
               ? "bg-gray-700"

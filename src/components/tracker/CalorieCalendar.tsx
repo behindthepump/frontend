@@ -31,7 +31,7 @@ export default function CalorieCalendar({
     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xs" id="calendar-view">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-sm font-bold text-gray-700 font-mono tracking-wider uppercase flex items-center space-x-2">
-          <Calendar className="w-4 h-4 text-[#2ECC71]" />
+          <Calendar className="w-4 h-4 text-[#A66A00]" />
           <span>Week {viewWeek} Calorie Entries</span>
         </h2>
         <div className="flex items-center space-x-2">
@@ -80,9 +80,9 @@ export default function CalorieCalendar({
                   : isSelected
                   ? "bg-[#111111] text-white border-[#111111] scale-102 shadow-sm"
                   : isToday
-                  ? `bg-[#2ECC71]/10 text-gray-900 border-[#2ECC71]${interactive ? " hover:bg-[#2ECC71]/20" : ""}`
+                  ? `bg-[#FEC63F]/10 text-gray-900 border-[#FEC63F]${interactive ? " hover:bg-[#FEC63F]/20" : ""}`
                   : isMissed
-                  ? `bg-amber-50/60 text-gray-800 border-amber-100${interactive ? " hover:bg-amber-50" : ""}`
+                  ? `bg-orange-50/60 text-gray-800 border-orange-100${interactive ? " hover:bg-orange-50" : ""}`
                   : `bg-gray-50 text-gray-800 border-gray-100${interactive ? " hover:bg-gray-100" : ""}`
               }${isFuture ? "" : interactive ? " cursor-pointer" : " cursor-default"}`}
             >
@@ -96,14 +96,14 @@ export default function CalorieCalendar({
                   {hasLog.notes && (
                     <span
                       className={`w-1.5 h-1.5 rounded-full ml-1 ${
-                        isSelected ? "bg-[#2ECC71]" : "bg-[#2ECC71]/70"
+                        isSelected ? "bg-[#FEC63F]" : "bg-[#FEC63F]/70"
                       }`}
                       title="Has a note"
                     />
                   )}
                 </span>
               ) : isMissed ? (
-                <span className={`text-[9px] font-bold uppercase mt-2 ${isSelected ? "text-amber-300" : "text-amber-600"}`}>
+                <span className={`text-[9px] font-bold uppercase mt-2 ${isSelected ? "text-orange-300" : "text-orange-600"}`}>
                   Missed
                 </span>
               ) : (
@@ -111,7 +111,7 @@ export default function CalorieCalendar({
               )}
 
               {isToday && (
-                <span className="text-[8px] font-extrabold uppercase mt-1 px-1 rounded bg-[#2ECC71] text-[#111111]">
+                <span className="text-[8px] font-extrabold uppercase mt-1 px-1 rounded bg-[#FEC63F] text-[#111111]">
                   Today
                 </span>
               )}
